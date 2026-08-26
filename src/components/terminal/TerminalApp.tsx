@@ -7,9 +7,9 @@ import { api } from "@/lib/api";
 import { getBooted, getBootedServer, setBooted, subscribeBooted } from "@/lib/bootFlag";
 import type { BrainState } from "@/lib/types";
 import { BootSequence } from "./BootSequence";
+import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
-import { FloraCorners } from "./FloraLayer";
 import { NowPlayingPanel } from "./NowPlayingPanel";
 import { buildThoughtSegments, IDLE_EMPTY, IDLE_SCHEDULED } from "./thoughtSegments";
 import { TerminalScript } from "./Typewriter";
@@ -139,14 +139,14 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
             aria-label="system status"
           >
             <span>
-              🌸 FLORA :: <span className="glow-lime">{state.system.flora}</span>
+              COLONY :: <span className="glow-lime">{state.system.flora}</span>
             </span>
             <span>
-              🐈 CAT PROCESSES ::{" "}
+              CAT_PROCS ::{" "}
               <span className="glow-cyan">{state.system.catProcesses.length} RUNNING</span>
             </span>
             <span>
-              🧠 THOUGHTS SERVED :: <span className="glow-pink">{state.system.thoughtsServed}</span>
+              THOUGHTS_SERVED :: <span className="glow-pink">{state.system.thoughtsServed}</span>
             </span>
           </section>
 
@@ -154,15 +154,15 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
             <h2 className="panel-title glow-violet text-lg tracking-widest">BRAIN ACCESS</h2>
             <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-xs text-faint">👁 CHECKS</dt>
+                <dt className="text-xs text-faint">CHECKS</dt>
                 <dd className="glow-green text-xl">{state.stats.checks}</dd>
               </div>
               <div>
-                <dt className="text-xs text-faint">🧠 THOUGHTS</dt>
+                <dt className="text-xs text-faint">THOUGHTS</dt>
                 <dd className="glow-pink text-xl">{state.stats.thoughtsServed}</dd>
               </div>
               <div>
-                <dt className="text-xs text-faint">🖥 SESSIONS</dt>
+                <dt className="text-xs text-faint">SESSIONS</dt>
                 <dd className="glow-cyan text-xl">{state.stats.sessions}</dd>
               </div>
             </dl>
@@ -239,7 +239,7 @@ function ThoughtTerminal({
 
   return (
     <section className="panel relative p-4 sm:p-6" aria-label="current thought">
-      <FloraCorners />
+      <CatCorners />
       <div className="mb-3 flex items-center justify-between border-b border-grid pb-2">
         <h2 className="panel-title glow-green text-lg tracking-widest">JAZ://THOUGHTS</h2>
         <button type="button" className="btn text-xs" onClick={onRecheck} disabled={busy}>

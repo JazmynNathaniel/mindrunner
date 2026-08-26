@@ -10,7 +10,7 @@ const BOOT_LINES: Segment[] = [
   { text: "> initializing neural interface...", className: "text-dim", charMs: 8, pauseAfter: 140 },
   { text: "> loading memory...", className: "text-dim", charMs: 8, pauseAfter: 140 },
   { text: "> loading thought processes...", className: "text-dim", charMs: 8, pauseAfter: 140 },
-  { text: "> loading flora...", className: "text-dim", charMs: 8, pauseAfter: 140 },
+  { text: "> loading additional cats...", className: "text-dim", charMs: 8, pauseAfter: 140 },
   { text: "> locating unauthorized cat processes...", className: "text-dim", charMs: 8, pauseAfter: 200 },
   { text: "> checking emotional stability...", className: "text-dim", charMs: 8, pauseAfter: 260 },
   { text: "> establishing connection...", className: "text-dim", charMs: 8, pauseAfter: 340 },

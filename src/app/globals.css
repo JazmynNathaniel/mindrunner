@@ -6,14 +6,14 @@
 --------------------------------------------------------------------------- */
 
 @theme {
-  --color-abyss: #060310;
-  --color-panel: #0d0719;
-  --color-panel2: #150c28;
-  --color-grid: #2a1a4a;
+  --color-abyss: #030207;
+  --color-panel: #07040e;
+  --color-panel2: #0c0718;
+  --color-grid: #1d1134;
 
-  --color-ink: #e9e3fb; /* body text: pale lavender-white, high contrast */
-  --color-dim: #9d90c7; /* secondary text */
-  --color-faint: #5d5385;
+  --color-ink: #ddd5f2; /* body text: pale lavender, high contrast on near-black */
+  --color-dim: #8478ad; /* secondary text */
+  --color-faint: #4d4373;
 
   --color-pink: #ff5cd6;
   --color-magenta: #ff2ea6;
@@ -39,10 +39,10 @@ html {
 }
 
 body {
-  /* faint phosphor wash + vignette: the cozy 2AM bedroom glow */
+  /* the faintest phosphor breath in an otherwise dark room */
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(160, 107, 255, 0.07), transparent 60%),
-    radial-gradient(100% 80% at 50% 100%, rgba(255, 92, 214, 0.05), transparent 55%),
+    radial-gradient(120% 90% at 50% 0%, rgba(160, 107, 255, 0.03), transparent 60%),
+    radial-gradient(100% 80% at 50% 100%, rgba(255, 92, 214, 0.02), transparent 55%),
     var(--color-abyss);
   background-attachment: fixed;
 }
@@ -82,13 +82,13 @@ body {
 -------------------------------------------------------------------------- */
 
 .panel {
-  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 92%, transparent);
   border: 1px solid var(--color-grid);
   border-radius: 6px;
   box-shadow:
-    0 0 0 1px rgba(6, 3, 16, 0.9),
-    0 0 22px rgba(160, 107, 255, 0.06),
-    inset 0 0 40px rgba(6, 3, 16, 0.5);
+    0 0 0 1px rgba(2, 1, 6, 0.95),
+    0 0 16px rgba(160, 107, 255, 0.035),
+    inset 0 0 48px rgba(2, 1, 6, 0.65);
 }
 
 .panel-title {
@@ -120,13 +120,13 @@ body {
   mix-blend-mode: overlay;
 }
 .crt::after {
-  /* phosphor bloom at the edges */
+  /* deep vignette: the screen glows, the room does not */
   content: "";
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 41;
-  background: radial-gradient(115% 100% at 50% 50%, transparent 68%, rgba(6, 3, 16, 0.55) 100%);
+  background: radial-gradient(115% 100% at 50% 50%, transparent 62%, rgba(2, 1, 6, 0.75) 100%);
 }
 
 .flicker {
@@ -169,7 +169,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   life layer: cats with root access, flora, glitches
+   life layer: cats with root access, more cats, glitches
 -------------------------------------------------------------------------- */
 
 .cat-walk-ltr {
@@ -196,13 +196,12 @@ body {
   to { transform: translateY(-2px); }
 }
 
-.flora-sway {
-  transform-origin: 50% 100%;
-  animation: flora-sway 5s ease-in-out infinite alternate;
+.cat-breathe {
+  animation: cat-breathe 3.8s ease-in-out infinite alternate;
 }
-@keyframes flora-sway {
-  from { transform: rotate(-3deg); }
-  to { transform: rotate(3.5deg); }
+@keyframes cat-breathe {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1.5px); }
 }
 
 .glitch-bar {

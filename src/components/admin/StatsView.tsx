@@ -30,15 +30,15 @@ export function StatsView({
         <>
           <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
             <div>
-              <dt className="text-xs text-faint">👁 CHECKS</dt>
+              <dt className="text-xs text-faint">CHECKS</dt>
               <dd className="glow-green text-2xl">{stats.checks}</dd>
             </div>
             <div>
-              <dt className="text-xs text-faint">🧠 SERVED</dt>
+              <dt className="text-xs text-faint">SERVED</dt>
               <dd className="glow-pink text-2xl">{stats.thoughtsServed}</dd>
             </div>
             <div>
-              <dt className="text-xs text-faint">🖥 SESSIONS</dt>
+              <dt className="text-xs text-faint">SESSIONS</dt>
               <dd className="glow-cyan text-2xl">{stats.sessions}</dd>
             </div>
           </dl>

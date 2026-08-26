@@ -12,7 +12,7 @@ const FIELDS: { key: keyof Omit<DiagnosticsDTO, "occupiedPct">; label: string; m
   { key: "latency", label: "LATENCY", max: 60 },
   { key: "catInterference", label: "CAT INTERFERENCE", max: 30 },
   { key: "warning", label: "WARNING LINE", max: 80 },
-  { key: "flora", label: "FLORA STATUS", max: 30 },
+  { key: "flora", label: "COLONY STATUS (the cats' collective mood)", max: 30 },
 ];
 
 export function VitalsForm({
