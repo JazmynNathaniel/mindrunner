@@ -1,0 +1,98 @@
+// thoughts.py — data model
+// Postgres everywhere (local dev points at the same Neon database).
+// NOTE: `status`, `role`, `category` and `selectionMode` are validated Strings
+// (see src/server/validation.ts) and `tags` is a JSON-encoded string[] — kept
+// engine-portable on purpose.
+// DATABASE_URL = pooled connection (runtime); DIRECT_URL = direct connection
+// (migrations & seed). On a database with no pooler, set both to the same URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  username     String    @unique
+  passwordHash String
+  role         String // "ADMIN" | "RECIPIENT"
+  createdAt    DateTime  @default(now())
+  lastLogin    DateTime?
+  sessions     Session[]
+  visits       Visit[]
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  tokenHash  String   @unique // sha256 of the cookie token — raw token never stored
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+}
+
+model Thought {
+  id            String    @id @default(uuid())
+  text          String
+  status        String    @default("DRAFT") // DRAFT | QUEUED | SCHEDULED | PUBLISHED | EXPIRED | ARCHIVED
+  category      String    @default("random")
+  tags          String    @default("[]") // JSON-encoded string[]
+  mood          String?
+  createdAt     DateTime  @default(now())
+  scheduledFor  DateTime? // server-side only; never exposed to the recipient
+  publishedAt   DateTime?
+  expiresAt     DateTime?
+  seenAt        DateTime? // first time the recipient decrypted it; never shown to admin (no read receipts)
+  queuePosition Int?
+  songId        String?
+  song          Song?     @relation(fields: [songId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+}
+
+model Song {
+  id          String      @id @default(uuid())
+  artist      String
+  title       String
+  album       String?
+  artworkUrl  String?
+  externalUrl String?
+  createdAt   DateTime    @default(now())
+  thoughts    Thought[]
+  nowPlaying  NowPlaying?
+}
+
+// Singleton (id = 1): the owner's global "Currently Listening" state.
+model NowPlaying {
+  id        Int      @id @default(1)
+  songId    String?  @unique
+  song      Song?    @relation(fields: [songId], references: [id], onDelete: SetNull)
+  updatedAt DateTime @updatedAt
+}
+
+model Visit {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitedAt DateTime @default(now())
+  sessionId String
+
+  @@index([userId, visitedAt])
+}
+
+// Singleton (id = 1): owner-configurable scheduler settings.
+// Intervals are minutes. lifetimeMin = 0 means "visible until the next thought replaces it".
+model Settings {
+  id             Int       @id @default(1)
+  minIntervalMin Int       @default(240) // 4h
+  maxIntervalMin Int       @default(2160) // 36h
+  lifetimeMin    Int       @default(1440) // 24h
+  selectionMode  String    @default("FIFO") // FIFO | RANDOM
+  lastTickAt     DateTime? // also serves as a row lock so concurrent ticks serialize
+}

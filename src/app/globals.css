@@ -1,0 +1,318 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   JAZ://BRAIN_OS design tokens
+   dark base, neon as light escaping from the machine
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-abyss: #060310;
+  --color-panel: #0d0719;
+  --color-panel2: #150c28;
+  --color-grid: #2a1a4a;
+
+  --color-ink: #e9e3fb; /* body text: pale lavender-white, high contrast */
+  --color-dim: #9d90c7; /* secondary text */
+  --color-faint: #5d5385;
+
+  --color-pink: #ff5cd6;
+  --color-magenta: #ff2ea6;
+  --color-violet: #a06bff;
+  --color-lime: #c8ff4f;
+  --color-green: #52ff9e;
+  --color-greendim: #37b077;
+  --color-cyan: #5df3ff;
+  --color-alert: #ff5c7a;
+}
+
+@theme inline {
+  --font-term: var(--font-plex), ui-monospace, monospace;
+  --font-display: var(--font-vt), var(--font-plex), monospace;
+}
+
+/* --------------------------------------------------------------------------
+   base
+-------------------------------------------------------------------------- */
+
+html {
+  background: var(--color-abyss);
+}
+
+body {
+  /* faint phosphor wash + vignette: the cozy 2AM bedroom glow */
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(160, 107, 255, 0.07), transparent 60%),
+    radial-gradient(100% 80% at 50% 100%, rgba(255, 92, 214, 0.05), transparent 55%),
+    var(--color-abyss);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-magenta);
+  color: var(--color-abyss);
+}
+
+/* --------------------------------------------------------------------------
+   neon glow utilities — light escaping from the machine
+-------------------------------------------------------------------------- */
+
+.glow-green {
+  color: var(--color-green);
+  text-shadow: 0 0 6px rgba(82, 255, 158, 0.55), 0 0 24px rgba(82, 255, 158, 0.18);
+}
+.glow-pink {
+  color: var(--color-pink);
+  text-shadow: 0 0 6px rgba(255, 92, 214, 0.55), 0 0 24px rgba(255, 92, 214, 0.2);
+}
+.glow-cyan {
+  color: var(--color-cyan);
+  text-shadow: 0 0 6px rgba(93, 243, 255, 0.5), 0 0 22px rgba(93, 243, 255, 0.16);
+}
+.glow-violet {
+  color: var(--color-violet);
+  text-shadow: 0 0 6px rgba(160, 107, 255, 0.55), 0 0 24px rgba(160, 107, 255, 0.2);
+}
+.glow-lime {
+  color: var(--color-lime);
+  text-shadow: 0 0 6px rgba(200, 255, 79, 0.45), 0 0 20px rgba(200, 255, 79, 0.14);
+}
+
+/* --------------------------------------------------------------------------
+   terminal panel
+-------------------------------------------------------------------------- */
+
+.panel {
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
+  border: 1px solid var(--color-grid);
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 1px rgba(6, 3, 16, 0.9),
+    0 0 22px rgba(160, 107, 255, 0.06),
+    inset 0 0 40px rgba(6, 3, 16, 0.5);
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------------------
+   CRT layer — subtle, readability first, disabled under reduced motion
+-------------------------------------------------------------------------- */
+
+.crt {
+  position: relative;
+}
+.crt::before {
+  /* scanlines */
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+.crt::after {
+  /* phosphor bloom at the edges */
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  background: radial-gradient(115% 100% at 50% 50%, transparent 68%, rgba(6, 3, 16, 0.55) 100%);
+}
+
+.flicker {
+  animation: crt-flicker 7s infinite;
+}
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  97.6% { opacity: 1; }
+  97.8% { opacity: 0.92; }
+  98% { opacity: 1; }
+  98.6% { opacity: 0.96; }
+  98.8% { opacity: 1; }
+}
+
+/* blinking block cursor */
+.cursor-blink {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  vertical-align: text-bottom;
+  background: var(--color-green);
+  box-shadow: 0 0 8px rgba(82, 255, 158, 0.7);
+  animation: blink 1.1s steps(1) infinite;
+}
+@keyframes blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0; }
+}
+
+/* occasional soft glitch on decorative headers */
+.glitchable:hover {
+  animation: microglitch 0.35s steps(2) 1;
+}
+@keyframes microglitch {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(1px, -1px) skewX(1.5deg); }
+  50% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, 0) skewX(-1deg); }
+  100% { transform: translate(0, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   life layer: cats with root access, flora, glitches
+-------------------------------------------------------------------------- */
+
+.cat-walk-ltr {
+  left: -60px;
+  animation: cat-cross-ltr 16s linear forwards;
+}
+.cat-walk-rtl {
+  left: 100vw;
+  animation: cat-cross-rtl 16s linear forwards;
+}
+@keyframes cat-cross-ltr {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 120px)); }
+}
+@keyframes cat-cross-rtl {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100vw - 120px)); }
+}
+.cat-bob {
+  animation: cat-bob 0.5s ease-in-out infinite alternate;
+}
+@keyframes cat-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-2px); }
+}
+
+.flora-sway {
+  transform-origin: 50% 100%;
+  animation: flora-sway 5s ease-in-out infinite alternate;
+}
+@keyframes flora-sway {
+  from { transform: rotate(-3deg); }
+  to { transform: rotate(3.5deg); }
+}
+
+.glitch-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 46, 166, 0.55), rgba(93, 243, 255, 0.5), transparent);
+  animation: glitch-slide 0.6s steps(6) forwards;
+}
+@keyframes glitch-slide {
+  0% { transform: translateX(-8%) scaleY(1); opacity: 1; }
+  50% { transform: translateX(5%) scaleY(2); }
+  100% { transform: translateX(-3%) scaleY(1); opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   accessibility: motion off = everything readable instantly, nothing moves
+-------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .crt::before,
+  .crt::after {
+    display: none;
+  }
+  .flicker,
+  .cursor-blink,
+  .glitchable:hover {
+    animation: none !important;
+  }
+  .cursor-blink {
+    opacity: 1;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* screen-reader-only helper (thought text is always available as plain text) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* form fields, terminal style */
+.field {
+  background: var(--color-abyss);
+  border: 1px solid var(--color-grid);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-ink);
+  width: 100%;
+  font-family: var(--font-term);
+  font-size: 0.875rem;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-violet);
+  box-shadow: 0 0 0 1px var(--color-violet), 0 0 14px rgba(160, 107, 255, 0.25);
+}
+.field::placeholder {
+  color: var(--color-faint);
+}
+
+.btn {
+  border: 1px solid var(--color-grid);
+  border-radius: 4px;
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-term);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--color-dim);
+  background: var(--color-panel2);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.btn:hover:not(:disabled) {
+  color: var(--color-ink);
+  border-color: var(--color-violet);
+  box-shadow: 0 0 12px rgba(160, 107, 255, 0.25);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  color: var(--color-abyss);
+  background: var(--color-green);
+  border-color: var(--color-green);
+  font-weight: 700;
+}
+.btn-primary:hover:not(:disabled) {
+  color: var(--color-abyss);
+  background: var(--color-lime);
+  border-color: var(--color-lime);
+  box-shadow: 0 0 16px rgba(200, 255, 79, 0.4);
+}
+.btn-danger:hover:not(:disabled) {
+  color: var(--color-alert);
+  border-color: var(--color-alert);
+  box-shadow: 0 0 12px rgba(255, 92, 122, 0.3);
+}
