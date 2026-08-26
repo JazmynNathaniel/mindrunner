@@ -86,6 +86,22 @@ model Visit {
   @@index([userId, visitedAt])
 }
 
+// Singleton (id = 1): the machine's owner-editable vitals — the tamagotchi layer.
+// Always fiction (spec §11): never real infrastructure data, just authored mood.
+model Diagnostics {
+  id              Int      @id @default(1)
+  cpu             String   @default("emotionally unstable")
+  memory          String   @default("mostly cats")
+  storage         String   @default("97% thoughts")
+  uptime          String   @default("questionable")
+  latency         String   @default("emotional")
+  catInterference String   @default("HIGH")
+  occupiedPct     Int      @default(87)
+  warning         String   @default("too many thoughts detected")
+  flora           String   @default("THRIVING")
+  updatedAt       DateTime @updatedAt
+}
+
 // Singleton (id = 1): owner-configurable scheduler settings.
 // Intervals are minutes. lifetimeMin = 0 means "visible until the next thought replaces it".
 model Settings {

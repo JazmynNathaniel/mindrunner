@@ -30,6 +30,7 @@ async function main() {
 
   await prisma.settings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
   await prisma.nowPlaying.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+  await prisma.diagnostics.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
   // Sample content so the terminal has something to show in dev. Only on an empty DB.
   const thoughtCount = await prisma.thought.count();

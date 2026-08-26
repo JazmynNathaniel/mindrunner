@@ -4,12 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import type { AdminThoughtDTO, RecipientStats, SettingsDTO, SongDTO } from "@/lib/types";
+import type {
+  AdminThoughtDTO,
+  DiagnosticsDTO,
+  RecipientStats,
+  SettingsDTO,
+  SongDTO,
+} from "@/lib/types";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsView } from "./StatsView";
 import { ThoughtList } from "./ThoughtList";
+import { VitalsForm } from "./VitalsForm";
 
 export function AdminApp() {
   const router = useRouter();
@@ -20,20 +27,23 @@ export function AdminApp() {
     stats: null,
   });
   const [editing, setEditing] = useState<AdminThoughtDTO | null>(null);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [t, s, np, st] = await Promise.all([
+      const [t, s, np, st, dg] = await Promise.all([
         api<{ thoughts: AdminThoughtDTO[] }>("/api/admin/thoughts"),
         api<{ settings: SettingsDTO }>("/api/admin/settings"),
         api<{ nowPlaying: (SongDTO & { updatedAt: string }) | null }>("/api/admin/now-playing"),
         api<{ stats: RecipientStats | null; recipientUsername?: string }>("/api/admin/stats"),
+        api<{ diagnostics: DiagnosticsDTO }>("/api/admin/diagnostics"),
       ]);
       setThoughts(t.thoughts);
       setSettings(s.settings);
       setNowPlaying(np.nowPlaying);
       setStats(st);
+      setDiagnostics(dg.diagnostics);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "connection to brain lost.");
@@ -115,6 +125,7 @@ export function AdminApp() {
         <div className="flex flex-col gap-4 lg:col-span-2">
           {settings && <SettingsPanel settings={settings} run={run} />}
           <NowPlayingForm nowPlaying={nowPlaying} run={run} />
+          {diagnostics && <VitalsForm initial={diagnostics} run={run} />}
           <StatsView stats={stats.stats} recipientUsername={stats.recipientUsername} />
         </div>
       </div>

@@ -171,7 +171,7 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
             </p>
           </section>
 
-          <DiagnosticsPanel />
+          <DiagnosticsPanel d={state.system.diagnostics} />
         </>
       )}
 

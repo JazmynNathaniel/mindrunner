@@ -27,6 +27,18 @@ export type RecipientStats = {
   thoughtsServed: number;
 };
 
+export type DiagnosticsDTO = {
+  cpu: string;
+  memory: string;
+  storage: string;
+  uptime: string;
+  latency: string;
+  catInterference: string;
+  occupiedPct: number;
+  warning: string;
+  flora: string;
+};
+
 export type BrainState = {
   /** thought = one is live; idle-scheduled = brain is processing; idle-empty = buffer empty */
   mode: "thought" | "idle-scheduled" | "idle-empty";
@@ -36,6 +48,7 @@ export type BrainState = {
     flora: string;
     catProcesses: string[];
     thoughtsServed: number;
+    diagnostics: DiagnosticsDTO;
   };
   stats: RecipientStats;
 };

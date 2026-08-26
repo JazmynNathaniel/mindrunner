@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import type { DiagnosticsDTO } from "@/lib/types";
 
 /**
- * Fictional diagnostics (spec §11): purely decorative, generated client-side,
- * never real infrastructure data. Numbers are randomized once per mount.
+ * Fictional diagnostics (spec §11): the authored vitals come from the owner
+ * (the tamagotchi layer); the packet counters are decorative client-side noise
+ * randomized once per mount. Never real infrastructure data.
  */
-export function DiagnosticsPanel() {
-  const [d] = useState(() => ({
+export function DiagnosticsPanel({ d }: { d: DiagnosticsDTO }) {
+  const [noise] = useState(() => ({
     received: 90 + Math.floor(Math.random() * 60),
     sent: 60 + Math.floor(Math.random() * 50),
     loss: 8 + Math.floor(Math.random() * 12),
-    occupied: 82 + Math.floor(Math.random() * 13),
   }));
   const cells = 20;
-  const filled = Math.round((d.occupied / 100) * cells);
+  const filled = Math.round((d.occupiedPct / 100) * cells);
   const bar = "█".repeat(filled) + "░".repeat(cells - filled);
 
   return (
@@ -24,15 +25,15 @@ export function DiagnosticsPanel() {
         <div>
           <p className="glow-pink">JAZ.EXE</p>
           <p className="mt-1 text-dim">
-            CPU: <span className="text-ink">emotionally unstable</span>
+            CPU: <span className="text-ink">{d.cpu}</span>
             <br />
-            MEMORY: <span className="text-ink">mostly cats</span>
+            MEMORY: <span className="text-ink">{d.memory}</span>
             <br />
-            STORAGE: <span className="text-ink">97% thoughts</span>
+            STORAGE: <span className="text-ink">{d.storage}</span>
             <br />
-            UPTIME: <span className="text-ink">questionable</span>
+            UPTIME: <span className="text-ink">{d.uptime}</span>
             <br />
-            LATENCY: <span className="text-ink">emotional</span>
+            LATENCY: <span className="text-ink">{d.latency}</span>
           </p>
         </div>
         <div>
@@ -40,21 +41,21 @@ export function DiagnosticsPanel() {
           <p className="mt-1 text-dim">
             STATUS: <span className="glow-green">ONLINE</span>
             <br />
-            PACKETS RECEIVED: <span className="text-ink">{d.received}</span>
+            PACKETS RECEIVED: <span className="text-ink">{noise.received}</span>
             <br />
-            PACKETS SENT: <span className="text-ink">{d.sent}</span>
+            PACKETS SENT: <span className="text-ink">{noise.sent}</span>
             <br />
-            THOUGHT LOSS: <span className="text-ink">{d.loss}%</span>
+            THOUGHT LOSS: <span className="text-ink">{noise.loss}%</span>
             <br />
-            CAT INTERFERENCE: <span className="text-alert">HIGH</span>
+            CAT INTERFERENCE: <span className="text-alert">{d.catInterference}</span>
           </p>
         </div>
         <div>
           <p className="glow-violet">BRAIN STATUS</p>
           <p className="mt-1 break-all text-greendim">
-            [{bar}] {d.occupied}%
+            [{bar}] {d.occupiedPct}%
           </p>
-          <p className="mt-1 text-alert">WARNING: too many thoughts detected</p>
+          <p className="mt-1 text-alert">WARNING: {d.warning}</p>
         </div>
       </div>
     </section>

@@ -77,6 +77,20 @@ export const settingsInput = z
   });
 export type SettingsInput = z.infer<typeof settingsInput>;
 
+const vital = z.string().trim().min(1).max(60);
+export const diagnosticsInput = z.object({
+  cpu: vital,
+  memory: vital,
+  storage: vital,
+  uptime: vital,
+  latency: vital,
+  catInterference: z.string().trim().min(1).max(30),
+  occupiedPct: z.number().int().min(0).max(100),
+  warning: z.string().trim().min(1).max(80),
+  flora: z.string().trim().min(1).max(30),
+});
+export type DiagnosticsInput = z.infer<typeof diagnosticsInput>;
+
 export const loginInput = z.object({
   username: z.string().trim().min(1).max(64),
   password: z.string().min(1).max(200),
