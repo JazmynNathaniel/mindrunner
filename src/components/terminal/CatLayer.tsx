@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PixelCat } from "./PixelSprites";
+import { PixelCat, type CatVariant } from "./PixelSprites";
 import { useReducedMotion } from "./Typewriter";
 
 const CAT_MESSAGES = [
@@ -16,7 +16,7 @@ const CAT_MESSAGES = [
 
 type CatEvent =
   | { kind: "message"; text: string }
-  | { kind: "walk"; dir: 1 | -1 }
+  | { kind: "walk"; dir: 1 | -1; variant: CatVariant }
   | { kind: "glitch" };
 
 /**
@@ -47,7 +47,12 @@ export function CatLayer() {
       const roll = Math.random();
       if (roll < 0.5)
         return { kind: "message", text: CAT_MESSAGES[Math.floor(Math.random() * CAT_MESSAGES.length)] };
-      if (roll < 0.85) return { kind: "walk", dir: Math.random() < 0.5 ? 1 : -1 };
+      if (roll < 0.85)
+        return {
+          kind: "walk",
+          dir: Math.random() < 0.5 ? 1 : -1,
+          variant: Math.random() < 0.5 ? "tabby" : "void",
+        };
       return { kind: "glitch" };
     };
 
@@ -60,12 +65,12 @@ export function CatLayer() {
     };
     schedule(25_000 + Math.random() * 30_000); // first visit from a cat: 25–55s in
 
-    // meow summons
+    // meow summons (the tabby answers)
     let buffer = "";
     const onKey = (e: KeyboardEvent) => {
       if (e.key.length !== 1) return;
       buffer = (buffer + e.key.toLowerCase()).slice(-4);
-      if (buffer === "meow") fire({ kind: "walk", dir: 1 });
+      if (buffer === "meow") fire({ kind: "walk", dir: 1, variant: "tabby" });
     };
     window.addEventListener("keydown", onKey);
 
@@ -100,7 +105,7 @@ export function CatLayer() {
           className={`pointer-events-none fixed bottom-1 z-30 ${event.dir === 1 ? "cat-walk-ltr" : "cat-walk-rtl"}`}
         >
           <div className="cat-bob" style={{ transform: event.dir === -1 ? "scaleX(-1)" : undefined }}>
-            <PixelCat size={44} />
+            <PixelCat size={44} variant={event.variant} />
           </div>
         </div>
       )}

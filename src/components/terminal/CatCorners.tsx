@@ -10,10 +10,10 @@ import { PixelCat } from "./PixelSprites";
 export function CatCorners() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-visible" aria-hidden="true">
-      {/* one keeping watch over the top edge */}
+      {/* the orange tabby keeps watch over the top edge (non-negotiable) */}
       <div className="absolute -top-4 right-6">
         <div className="cat-breathe">
-          <PixelCat sitting size={30} />
+          <PixelCat sitting size={30} variant="tabby" />
         </div>
       </div>
       {/* two lurking at the bottom border */}
