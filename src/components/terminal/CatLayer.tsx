@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import { PixelCat, type CatVariant } from "./PixelSprites";
 import { useReducedMotion } from "./Typewriter";
 
-const CAT_MESSAGES = [
-  "> WARNING: unauthorized cat activity detected.",
-  "> KEVIN.EXE has requested elevated privileges.",
-  "> JOJO.EXE has rejected your request.",
-  "> cat_process_02 is observing you.",
-  "> KEVIN.EXE is sitting on the keyboard. again.",
-  "> JOJO.EXE purring at 48kHz. system stability improved.",
-  "> kernel panic averted: the cat moved.",
+const CAT_MESSAGES: { text: string; variant: CatVariant }[] = [
+  { text: "> WARNING: unauthorized cat activity detected.", variant: "void" },
+  { text: "> KEVIN.EXE has requested elevated privileges.", variant: "tabby" },
+  { text: "> JOJO.EXE has rejected your request.", variant: "tuxedo" },
+  { text: "> cat_process_02 is observing you.", variant: "void" },
+  { text: "> KEVIN.EXE is sitting on the keyboard. again.", variant: "tabby" },
+  { text: "> JOJO.EXE purring at 48kHz. system stability improved.", variant: "tuxedo" },
+  { text: "> kernel panic averted: the cat moved.", variant: "void" },
 ];
 
 type CatEvent =
-  | { kind: "message"; text: string }
+  | { kind: "message"; text: string; variant: CatVariant }
   | { kind: "walk"; dir: 1 | -1; variant: CatVariant }
   | { kind: "glitch" };
 
@@ -45,14 +45,19 @@ export function CatLayer() {
 
     const randomEvent = (): CatEvent => {
       const roll = Math.random();
-      if (roll < 0.5)
-        return { kind: "message", text: CAT_MESSAGES[Math.floor(Math.random() * CAT_MESSAGES.length)] };
-      if (roll < 0.85)
+      if (roll < 0.5) {
+        const m = CAT_MESSAGES[Math.floor(Math.random() * CAT_MESSAGES.length)];
+        return { kind: "message", text: m.text, variant: m.variant };
+      }
+      if (roll < 0.85) {
+        // KEVIN and JOJO share patrol duty; cat_process_02 walks rarely
+        const v = Math.random();
         return {
           kind: "walk",
           dir: Math.random() < 0.5 ? 1 : -1,
-          variant: Math.random() < 0.5 ? "tabby" : "void",
+          variant: v < 0.4 ? "tabby" : v < 0.8 ? "tuxedo" : "void",
         };
+      }
       return { kind: "glitch" };
     };
 
@@ -65,7 +70,7 @@ export function CatLayer() {
     };
     schedule(25_000 + Math.random() * 30_000); // first visit from a cat: 25–55s in
 
-    // meow summons (the tabby answers)
+    // meow summons (KEVIN answers; JOJO would never)
     let buffer = "";
     const onKey = (e: KeyboardEvent) => {
       if (e.key.length !== 1) return;
@@ -95,7 +100,7 @@ export function CatLayer() {
     <div aria-hidden="true">
       {event?.kind === "message" && (
         <div className="panel pointer-events-none fixed bottom-4 left-1/2 z-30 flex max-w-[92vw] -translate-x-1/2 items-center gap-2 px-3 py-2">
-          <PixelCat sitting size={26} />
+          <PixelCat sitting size={26} variant={event.variant} />
           <span className="glow-lime text-xs sm:text-sm">{event.text}</span>
         </div>
       )}

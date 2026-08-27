@@ -6,16 +6,48 @@ function px(x: number, y: number, fill: string, key: string) {
   return <rect key={key} x={x} y={y} width={1} height={1} fill={fill} />;
 }
 
-export type CatVariant = "void" | "tabby";
+// The colony, canonically: KEVIN is the tabby, JOJO is the tuxedo,
+// and "void" is cat_process_02 — the unidentified third process.
+export type CatVariant = "void" | "tabby" | "tuxedo";
 
 const PALETTES: Record<
   CatVariant,
-  { body: string; edge: string; eye: string; nose: string; stripe: string | null }
+  {
+    body: string;
+    edge: string;
+    eye: string;
+    nose: string;
+    stripe: string | null;
+    patch: string | null;
+  }
 > = {
-  // the house style: a void cat edged in violet
-  void: { body: "#241640", edge: "#a06bff", eye: "#c8ff4f", nose: "#ff5cd6", stripe: null },
-  // the mandatory orange tabby
-  tabby: { body: "#c96a1e", edge: "#ffa14f", eye: "#c8ff4f", nose: "#ff5cd6", stripe: "#7e3c0e" },
+  // cat_process_02: a void cat edged in violet
+  void: {
+    body: "#241640",
+    edge: "#a06bff",
+    eye: "#c8ff4f",
+    nose: "#ff5cd6",
+    stripe: null,
+    patch: null,
+  },
+  // KEVIN, the orange tabby
+  tabby: {
+    body: "#c96a1e",
+    edge: "#ffa14f",
+    eye: "#c8ff4f",
+    nose: "#ff5cd6",
+    stripe: "#7e3c0e",
+    patch: null,
+  },
+  // JOJO, the tuxedo: black coat, white bib / muzzle / paws
+  tuxedo: {
+    body: "#14121c",
+    edge: "#3d3856",
+    eye: "#c8ff4f",
+    nose: "#ff5cd6",
+    stripe: null,
+    patch: "#e8e6f0",
+  },
 };
 
 /** Small pixel cat, ~14x10 grid. `sitting` tucks the tail. */
@@ -68,6 +100,19 @@ export function PixelCat({
   body(8, 8);
   body(2, 9);
   body(8, 9);
+  // tuxedo formalwear, painted last so it sits on top of the coat
+  if (pal.patch) {
+    const p = (x: number, y: number) => cells.push(px(x, y, pal.patch!, `p${x},${y}`));
+    // white muzzle beside the nose
+    p(1, 3);
+    // bib under the chin
+    p(2, 4);
+    p(3, 4);
+    p(2, 5);
+    // white front paw + one white rear sock
+    p(2, 9);
+    p(8, 9);
+  }
   // tabby markings, painted last so they sit on top of the coat
   if (pal.stripe) {
     // forehead M
