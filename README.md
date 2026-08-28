@@ -82,7 +82,7 @@ routes (src/app/api/**)  →  services (src/server/**)  →  Prisma  →  DB
 | auth & sessions | `src/server/auth.ts` |
 | scheduler (source of truth) | `src/server/scheduler.ts` |
 | thoughts CRUD + DTOs | `src/server/thoughts.ts` |
-| music (`MusicService` interface — swap in Spotify later) | `src/server/music.ts` |
+| music (`MusicService` interface — Spotify presence with manual fallback) | `src/server/music.ts`, `src/server/spotify.ts` |
 | recipient state composition | `src/server/state.ts` |
 | stats / visit tracking | `src/server/stats.ts` |
 | input validation (zod) | `src/server/validation.ts` |

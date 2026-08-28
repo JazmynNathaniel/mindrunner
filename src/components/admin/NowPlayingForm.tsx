@@ -44,6 +44,9 @@ export function NowPlayingForm({
         ) : (
           <p className="text-faint">&gt; silence. suspicious.</p>
         )}
+        <p className="text-xs text-faint">
+          &gt; fallback signal only — live spotify presence overrides this when the deck is on.
+        </p>
         <input
           aria-label="artist"
           className="field"

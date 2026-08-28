@@ -1,6 +1,7 @@
 import type { Song } from "@prisma/client";
 import { prisma } from "./db";
 import type { DbClient } from "./settings";
+import { isSpotifyConfigured, SpotifyMusicService } from "./spotify";
 import type { SongInput } from "./validation";
 
 export type SongDTO = {
@@ -9,6 +10,15 @@ export type SongDTO = {
   album: string | null;
   artworkUrl: string | null;
   externalUrl: string | null;
+};
+
+export type NowPlayingDTO = SongDTO & {
+  updatedAt: string;
+  /** false = deck is idle; the song shown is the last one played */
+  isPlaying: boolean;
+  /** real playback position/length in seconds when the provider knows them */
+  progressSec: number | null;
+  durationSec: number | null;
 };
 
 export function toSongDTO(song: Song): SongDTO {
@@ -22,13 +32,13 @@ export function toSongDTO(song: Song): SongDTO {
 }
 
 /**
- * Music is isolated behind this interface so a real provider (e.g. Spotify's
- * currently-playing API) can replace ManualMusicService later without touching
- * thoughts, scheduling, or rendering.
+ * Music is isolated behind this interface; SpotifyMusicService is the real
+ * provider and ManualMusicService is both the standalone fallback and the
+ * write path (thought songs, admin fallback entry).
  */
 export interface MusicService {
-  getNowPlaying(): Promise<(SongDTO & { updatedAt: string }) | null>;
-  setNowPlaying(input: SongInput | null): Promise<(SongDTO & { updatedAt: string }) | null>;
+  getNowPlaying(): Promise<NowPlayingDTO | null>;
+  setNowPlaying(input: SongInput | null): Promise<NowPlayingDTO | null>;
   /** Find-or-create a Song row (deduped on artist+title+album). */
   resolveSong(input: SongInput, db?: DbClient): Promise<Song>;
 }
@@ -68,7 +78,14 @@ class ManualMusicService implements MusicService {
   async getNowPlaying() {
     const np = await prisma.nowPlaying.findUnique({ where: { id: 1 }, include: { song: true } });
     if (!np?.song) return null;
-    return { ...toSongDTO(np.song), updatedAt: np.updatedAt.toISOString() };
+    return {
+      ...toSongDTO(np.song),
+      updatedAt: np.updatedAt.toISOString(),
+      // a manual entry claims "listening now"; it has no real playback data
+      isPlaying: true,
+      progressSec: null,
+      durationSec: null,
+    };
   }
 
   async setNowPlaying(input: SongInput | null) {
@@ -82,4 +99,9 @@ class ManualMusicService implements MusicService {
   }
 }
 
-export const musicService: MusicService = new ManualMusicService();
+/** Write path + fallback display. The admin now-playing route edits this one. */
+export const manualMusicService: MusicService = new ManualMusicService();
+
+export const musicService: MusicService = isSpotifyConfigured()
+  ? new SpotifyMusicService(manualMusicService)
+  : manualMusicService;

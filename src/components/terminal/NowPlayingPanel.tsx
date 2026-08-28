@@ -1,9 +1,10 @@
 "use client";
 
-import type { SongDTO } from "@/lib/types";
+import type { NowPlayingDTO } from "@/lib/types";
 
 // Deterministic pseudo-random from the song itself, so the decorative playback
-// position is stable across renders (no real playback is built — spec §8).
+// position is stable across renders — the fallback for manual entries, where
+// no real playback exists (spec §8). Spotify entries carry real positions.
 function hash(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -23,14 +24,24 @@ export function NowPlayingPanel({
   song,
   label = "NOW PLAYING",
 }: {
-  song: SongDTO;
+  song: NowPlayingDTO;
   label?: string;
 }) {
-  const key = `${song.artist}::${song.title}`;
-  const duration = 165 + (hash(key) % 166); // 2:45 – 5:30
-  const position = Math.floor(duration * (0.25 + (hash(key + "pos") % 55) / 100)); // 25–79%
+  let duration: number;
+  let position: number | null; // null = deck idle, no position known
+  if (song.durationSec != null) {
+    duration = song.durationSec;
+    position = song.progressSec;
+  } else {
+    const key = `${song.artist}::${song.title}`;
+    duration = 165 + (hash(key) % 166); // 2:45 – 5:30
+    position = Math.floor(duration * (0.25 + (hash(key + "pos") % 55) / 100)); // 25–79%
+  }
   const cells = 21;
-  const filled = Math.round((position / duration) * cells);
+  const filled =
+    position == null || duration <= 0
+      ? 0
+      : Math.min(cells, Math.round((position / duration) * cells));
   const bar = "█".repeat(filled) + "░".repeat(cells - filled);
 
   return (
@@ -67,7 +78,7 @@ export function NowPlayingPanel({
         </div>
       </div>
       <p className="mt-3 overflow-hidden font-term text-xs text-greendim" aria-hidden="true">
-        {bar} {fmt(position)} / {fmt(duration)}
+        {bar} {position == null ? "--:--" : fmt(position)} / {fmt(duration)}
       </p>
     </section>
   );

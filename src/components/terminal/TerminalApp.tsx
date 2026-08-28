@@ -129,7 +129,14 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
       />
 
       {state?.nowPlaying && (
-        <NowPlayingPanel song={state.nowPlaying} label="JAZ IS CURRENTLY LISTENING TO" />
+        <NowPlayingPanel
+          song={state.nowPlaying}
+          label={
+            state.nowPlaying.isPlaying
+              ? "JAZ IS CURRENTLY LISTENING TO"
+              : "JAZ WAS LAST LISTENING TO"
+          }
+        />
       )}
 
       {state && (

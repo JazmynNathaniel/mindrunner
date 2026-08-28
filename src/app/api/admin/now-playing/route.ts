@@ -1,21 +1,24 @@
 import { requireAdmin } from "@/server/auth";
 import { apiHandler, json } from "@/server/http";
-import { musicService } from "@/server/music";
+import { manualMusicService } from "@/server/music";
 import { songInput } from "@/server/validation";
+
+// Deliberately bound to the MANUAL service: this route reads/edits the
+// fallback entry. Spotify presence (when configured) overrides it on display.
 
 export const GET = apiHandler(async () => {
   await requireAdmin();
-  return json({ nowPlaying: await musicService.getNowPlaying() });
+  return json({ nowPlaying: await manualMusicService.getNowPlaying() });
 });
 
 export const PUT = apiHandler(async (req) => {
   await requireAdmin();
   const input = songInput.parse(await req.json());
-  return json({ nowPlaying: await musicService.setNowPlaying(input) });
+  return json({ nowPlaying: await manualMusicService.setNowPlaying(input) });
 });
 
 export const DELETE = apiHandler(async () => {
   await requireAdmin();
-  await musicService.setNowPlaying(null);
+  await manualMusicService.setNowPlaying(null);
   return json({ nowPlaying: null });
 });

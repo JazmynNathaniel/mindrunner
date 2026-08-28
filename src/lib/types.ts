@@ -8,6 +8,15 @@ export type SongDTO = {
   externalUrl: string | null;
 };
 
+export type NowPlayingDTO = SongDTO & {
+  updatedAt: string;
+  /** false = deck is idle; the song shown is the last one played */
+  isPlaying: boolean;
+  /** real playback position/length in seconds when the provider knows them */
+  progressSec: number | null;
+  durationSec: number | null;
+};
+
 export type RecipientThoughtDTO = {
   id: string;
   text: string;
@@ -43,7 +52,7 @@ export type BrainState = {
   /** thought = one is live; idle-scheduled = brain is processing; idle-empty = buffer empty */
   mode: "thought" | "idle-scheduled" | "idle-empty";
   thought: RecipientThoughtDTO | null;
-  nowPlaying: (SongDTO & { updatedAt: string }) | null;
+  nowPlaying: NowPlayingDTO | null;
   system: {
     flora: string;
     catProcesses: string[];
