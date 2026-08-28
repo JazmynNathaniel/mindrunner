@@ -11,6 +11,7 @@ import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { NowPlayingPanel } from "./NowPlayingPanel";
+import { ReplyComposer } from "./ReplyComposer";
 import { ShutdownSequence } from "./ShutdownSequence";
 import { buildThoughtSegments, IDLE_EMPTY, IDLE_SCHEDULED } from "./thoughtSegments";
 import { TerminalScript } from "./Typewriter";
@@ -139,6 +140,8 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
         busy={busy}
         checkNote={checkNote}
       />
+
+      {state && <ReplyComposer thoughtId={state.thought?.id ?? null} />}
 
       {state?.nowPlaying && (
         <NowPlayingPanel

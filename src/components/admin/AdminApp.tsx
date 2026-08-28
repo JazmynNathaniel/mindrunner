@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type {
+  AdminReplyDTO,
   AdminThoughtDTO,
   DiagnosticsDTO,
   RecipientStats,
@@ -13,6 +14,7 @@ import type {
 } from "@/lib/types";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
+import { RepliesPanel } from "./RepliesPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsView } from "./StatsView";
 import { ThoughtList } from "./ThoughtList";
@@ -28,22 +30,25 @@ export function AdminApp() {
   });
   const [editing, setEditing] = useState<AdminThoughtDTO | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsDTO | null>(null);
+  const [replies, setReplies] = useState<AdminReplyDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [t, s, np, st, dg] = await Promise.all([
+      const [t, s, np, st, dg, rp] = await Promise.all([
         api<{ thoughts: AdminThoughtDTO[] }>("/api/admin/thoughts"),
         api<{ settings: SettingsDTO }>("/api/admin/settings"),
         api<{ nowPlaying: (SongDTO & { updatedAt: string }) | null }>("/api/admin/now-playing"),
         api<{ stats: RecipientStats | null; recipientUsername?: string }>("/api/admin/stats"),
         api<{ diagnostics: DiagnosticsDTO }>("/api/admin/diagnostics"),
+        api<{ replies: AdminReplyDTO[] }>("/api/admin/replies"),
       ]);
       setThoughts(t.thoughts);
       setSettings(s.settings);
       setNowPlaying(np.nowPlaying);
       setStats(st);
       setDiagnostics(dg.diagnostics);
+      setReplies(rp.replies);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "connection to brain lost.");
@@ -119,6 +124,7 @@ export function AdminApp() {
             onError={setError}
             onCancelEdit={() => setEditing(null)}
           />
+          <RepliesPanel replies={replies} run={run} />
           <ThoughtList thoughts={thoughts} onEdit={setEditing} run={run} />
         </div>
 
