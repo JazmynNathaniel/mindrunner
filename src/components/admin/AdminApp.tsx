@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type {
+  AdminOperatorVitalsDTO,
   AdminReplyDTO,
   AdminThoughtDTO,
   DiagnosticsDTO,
@@ -14,6 +15,7 @@ import type {
 } from "@/lib/types";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
+import { OperatorCareForm } from "./OperatorCareForm";
 import { RepliesPanel } from "./RepliesPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { StatsView } from "./StatsView";
@@ -31,17 +33,19 @@ export function AdminApp() {
   const [editing, setEditing] = useState<AdminThoughtDTO | null>(null);
   const [diagnostics, setDiagnostics] = useState<DiagnosticsDTO | null>(null);
   const [replies, setReplies] = useState<AdminReplyDTO[]>([]);
+  const [operator, setOperator] = useState<AdminOperatorVitalsDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [t, s, np, st, dg, rp] = await Promise.all([
+      const [t, s, np, st, dg, rp, op] = await Promise.all([
         api<{ thoughts: AdminThoughtDTO[] }>("/api/admin/thoughts"),
         api<{ settings: SettingsDTO }>("/api/admin/settings"),
         api<{ nowPlaying: (SongDTO & { updatedAt: string }) | null }>("/api/admin/now-playing"),
         api<{ stats: RecipientStats | null; recipientUsername?: string }>("/api/admin/stats"),
         api<{ diagnostics: DiagnosticsDTO }>("/api/admin/diagnostics"),
         api<{ replies: AdminReplyDTO[] }>("/api/admin/replies"),
+        api<{ operator: AdminOperatorVitalsDTO }>("/api/admin/operator"),
       ]);
       setThoughts(t.thoughts);
       setSettings(s.settings);
@@ -49,6 +53,7 @@ export function AdminApp() {
       setStats(st);
       setDiagnostics(dg.diagnostics);
       setReplies(rp.replies);
+      setOperator(op.operator);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "connection to brain lost.");
@@ -130,6 +135,7 @@ export function AdminApp() {
 
         <div className="flex flex-col gap-4 lg:col-span-2">
           {settings && <SettingsPanel settings={settings} run={run} />}
+          <OperatorCareForm operator={operator} run={run} />
           <NowPlayingForm nowPlaying={nowPlaying} run={run} />
           {diagnostics && <VitalsForm initial={diagnostics} run={run} />}
           <StatsView stats={stats.stats} recipientUsername={stats.recipientUsername} />

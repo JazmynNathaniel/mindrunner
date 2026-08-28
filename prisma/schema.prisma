@@ -119,6 +119,18 @@ model Diagnostics {
   updatedAt       DateTime @updatedAt
 }
 
+// Operator vitals — the tamagotchi layer inverts: the machine logs its human.
+// WATER/FOOD are the owner's intake events (coolant refills / payload packets);
+// PING is the recipient's hydration nudge. "Today" is computed in ET.
+model OperatorEvent {
+  id        String   @id @default(uuid())
+  kind      String // "WATER" | "FOOD" | "PING" (validated string, see validation.ts)
+  payload   String? // FOOD only: what the payload was
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
 // Singleton (id = 1): owner-configurable scheduler settings.
 // Intervals are minutes. lifetimeMin = 0 means "visible until the next thought replaces it".
 model Settings {

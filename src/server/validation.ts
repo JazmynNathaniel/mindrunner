@@ -110,3 +110,14 @@ export type ReplyInput = z.infer<typeof replyInput>;
 export const replyAction = z.object({
   action: z.enum(["decrypt", "delete"]),
 });
+
+export const vitalsAction = z
+  .object({
+    action: z.enum(["coolant", "uncoolant", "packet"]),
+    payload: z.preprocess(emptyToUndef, z.string().trim().max(120).optional()),
+  })
+  .refine((v) => v.action !== "packet" || !!v.payload, {
+    message: "a packet needs contents",
+    path: ["payload"],
+  });
+export type VitalsAction = z.infer<typeof vitalsAction>;

@@ -5,6 +5,7 @@ import { musicService } from "./music";
 import { tick } from "./scheduler";
 import { getRecipientStats, recordVisit } from "./stats";
 import { toRecipientDTO } from "./thoughts";
+import { getOperatorVitals } from "./vitals";
 import type { BrainState } from "@/lib/types";
 
 /**
@@ -23,12 +24,13 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
   const isRecipient = user.role === "RECIPIENT";
   if (isRecipient) await recordVisit(user.id, sessionId);
 
-  const [published, scheduledCount, nowPlaying, stats, diagnostics] = await Promise.all([
+  const [published, scheduledCount, nowPlaying, stats, diagnostics, vitals] = await Promise.all([
     prisma.thought.findFirst({ where: { status: "PUBLISHED" }, include: { song: true } }),
     prisma.thought.count({ where: { status: "SCHEDULED" } }),
     musicService.getNowPlaying(),
     getRecipientStats(isRecipient ? user.id : (await recipientUserId()) ?? user.id),
     getDiagnostics(),
+    getOperatorVitals(),
   ]);
 
   let thought = null;
@@ -48,6 +50,7 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
     mode: thought ? "thought" : scheduledCount > 0 ? "idle-scheduled" : "idle-empty",
     thought,
     nowPlaying,
+    vitals,
     system: {
       // decorative flavor only — never real infrastructure data (spec §11/§17);
       // the vitals are owner-authored fiction from the Diagnostics singleton

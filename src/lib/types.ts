@@ -48,11 +48,25 @@ export type DiagnosticsDTO = {
   flora: string;
 };
 
+export type OperatorVitalsDTO = {
+  /** water, in fiction: coolant refills logged today (ET) */
+  coolant: { today: number; target: number };
+  /** meals, in fiction: payload packets received today (ET) */
+  packetsToday: number;
+  lastPacket: { at: string; payload: string } | null;
+};
+
+export type AdminOperatorVitalsDTO = OperatorVitalsDTO & {
+  /** ISO timestamps of his coolant top-up requests, last 24h, newest first */
+  pings: string[];
+};
+
 export type BrainState = {
   /** thought = one is live; idle-scheduled = brain is processing; idle-empty = buffer empty */
   mode: "thought" | "idle-scheduled" | "idle-empty";
   thought: RecipientThoughtDTO | null;
   nowPlaying: NowPlayingDTO | null;
+  vitals: OperatorVitalsDTO;
   system: {
     flora: string;
     catProcesses: string[];

@@ -11,6 +11,7 @@ import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { NowPlayingPanel } from "./NowPlayingPanel";
+import { OperatorVitalsPanel } from "./OperatorVitalsPanel";
 import { ReplyComposer } from "./ReplyComposer";
 import { ShutdownSequence } from "./ShutdownSequence";
 import { buildThoughtSegments, IDLE_EMPTY, IDLE_SCHEDULED } from "./thoughtSegments";
@@ -153,6 +154,8 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
           }
         />
       )}
+
+      {state && <OperatorVitalsPanel vitals={state.vitals} />}
 
       {state && (
         <>
