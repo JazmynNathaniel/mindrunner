@@ -11,6 +11,7 @@ import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { NowPlayingPanel } from "./NowPlayingPanel";
+import { ShutdownSequence } from "./ShutdownSequence";
 import { buildThoughtSegments, IDLE_EMPTY, IDLE_SCHEDULED } from "./thoughtSegments";
 import { TerminalScript } from "./Typewriter";
 
@@ -21,6 +22,7 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [checkNote, setCheckNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [shuttingDown, setShuttingDown] = useState(false);
   // the alreadySeen flag from the FIRST time each thought arrived, so refetches
   // don't replay the reveal with different framing
   const [seenFlags, setSeenFlags] = useState<Record<string, boolean>>({});
@@ -85,13 +87,23 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
-  async function logout() {
-    try {
-      await api("/api/auth/logout", { method: "POST" });
-    } finally {
-      setBooted(false);
-      router.push("/login");
-    }
+  function logout() {
+    // session revoked while the shutdown sequence plays; navigation happens
+    // in onDone so the boot screen never flashes on the way out
+    setShuttingDown(true);
+    void api("/api/auth/logout", { method: "POST" }).catch(() => {});
+  }
+
+  // must win over !booted: setBooted(false) below would re-mount BootSequence
+  if (shuttingDown) {
+    return (
+      <ShutdownSequence
+        onDone={() => {
+          setBooted(false);
+          router.push("/login");
+        }}
+      />
+    );
   }
 
   if (!booted) {

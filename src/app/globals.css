@@ -218,6 +218,19 @@ body {
   100% { transform: translateX(-3%) scaleY(1); opacity: 0; }
 }
 
+/* old CRT power-off: the picture collapses to a bright horizontal line, then
+   a dot, then nothing. `forwards` holds the dead screen until navigation. */
+.crt-off {
+  animation: crt-off 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  transform-origin: center;
+}
+@keyframes crt-off {
+  0% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+  55% { transform: scaleY(0.008) scaleX(1); opacity: 1; filter: brightness(2.6); }
+  80% { transform: scaleY(0.004) scaleX(0.06); opacity: 1; filter: brightness(3.2); }
+  100% { transform: scaleY(0.002) scaleX(0.002); opacity: 0; filter: brightness(0); }
+}
+
 /* --------------------------------------------------------------------------
    accessibility: motion off = everything readable instantly, nothing moves
 -------------------------------------------------------------------------- */
