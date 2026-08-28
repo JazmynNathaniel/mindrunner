@@ -99,3 +99,14 @@ export const loginInput = z.object({
 export const thoughtAction = z.object({
   action: z.enum(["queue", "unqueue", "publish", "expire", "archive"]),
 });
+
+export const replyInput = z.object({
+  text: z.string().trim().min(1).max(1000),
+  mischief: z.number().int().min(1).max(5),
+  thoughtId: z.string().uuid().nullish(),
+});
+export type ReplyInput = z.infer<typeof replyInput>;
+
+export const replyAction = z.object({
+  action: z.enum(["decrypt", "delete"]),
+});

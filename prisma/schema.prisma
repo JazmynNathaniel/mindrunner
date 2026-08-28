@@ -52,8 +52,25 @@ model Thought {
   queuePosition Int?
   songId        String?
   song          Song?     @relation(fields: [songId], references: [id], onDelete: SetNull)
+  replies       Reply[]
 
   @@index([status])
+}
+
+// Transmissions from the recipient back to the owner. `mischief` (1..5) is his
+// self-rating of how feral the message is — it is shown to the admin BEFORE the
+// text is decrypted, which is the entire point. Text stays server-redacted
+// until seenAt is stamped by an explicit decrypt.
+model Reply {
+  id        String    @id @default(uuid())
+  text      String
+  mischief  Int       @default(1) // 1..5, validated in src/server/validation.ts
+  createdAt DateTime  @default(now())
+  seenAt    DateTime? // when the owner dared to open it
+  thoughtId String?
+  thought   Thought?  @relation(fields: [thoughtId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }
 
 model Song {

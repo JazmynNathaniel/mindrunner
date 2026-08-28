@@ -77,6 +77,17 @@ export type AdminThoughtDTO = {
   song: SongDTO | null;
 };
 
+export type AdminReplyDTO = {
+  id: string;
+  /** null until the owner decrypts it — the mischief rating is the only preview */
+  text: string | null;
+  mischief: number;
+  createdAt: string;
+  seenAt: string | null;
+  /** what he was replying to, if it still exists */
+  thoughtExcerpt: string | null;
+};
+
 export type SettingsDTO = {
   minIntervalMin: number;
   maxIntervalMin: number;
