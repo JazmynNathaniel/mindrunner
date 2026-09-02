@@ -51,6 +51,9 @@ export function Composer({
   );
   const [busy, setBusy] = useState(false);
   const [previewNonce, setPreviewNonce] = useState(0);
+  // AdminApp keys this component by editing id, so picking a thought to edit
+  // remounts it and a collapsed composer reopens with the edit form visible
+  const [open, setOpen] = useState(true);
 
   function payload(queue: boolean) {
     return {
@@ -132,7 +135,18 @@ export function Composer({
     <section className="panel p-4 sm:p-5" aria-label="thought composer">
       <div className="flex items-center justify-between border-b border-grid pb-2">
         <h2 className="panel-title glow-green text-lg tracking-widest">
-          {editing ? `EDIT THOUGHT :: ${editing.status}` : "NEW THOUGHT"}
+          <button
+            type="button"
+            className="flex cursor-pointer items-baseline gap-2 text-left tracking-widest hover:brightness-125"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <span aria-hidden="true">{open ? "[-]" : "[+]"}</span>
+            <span>
+              {editing ? `EDIT THOUGHT :: ${editing.status}` : "NEW THOUGHT"}
+              {!open && text.trim() && " :: unsaved"}
+            </span>
+          </button>
         </h2>
         {editing && (
           <button type="button" className="btn text-xs" onClick={onCancelEdit}>
@@ -141,148 +155,152 @@ export function Composer({
         )}
       </div>
 
-      <div className="mt-3 space-y-3">
-        <div>
-          <label htmlFor="thought-text" className="mb-1 block text-xs tracking-widest text-faint">
-            THOUGHT
-          </label>
-          <textarea
-            id="thought-text"
-            className="field min-h-24 resize-y"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            maxLength={4000}
-            placeholder="what is the brain doing right now…"
-          />
-        </div>
+      {open && (
+        <>
+          <div className="mt-3 space-y-3">
+            <div>
+              <label htmlFor="thought-text" className="mb-1 block text-xs tracking-widest text-faint">
+                THOUGHT
+              </label>
+              <textarea
+                id="thought-text"
+                className="field min-h-24 resize-y"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                maxLength={4000}
+                placeholder="what is the brain doing right now…"
+              />
+            </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <label htmlFor="thought-category" className="mb-1 block text-xs tracking-widest text-faint">
-              CATEGORY
-            </label>
-            <select
-              id="thought-category"
-              className="field"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="thought-tags" className="mb-1 block text-xs tracking-widest text-faint">
-              TAGS <span className="normal-case">(comma separated)</span>
-            </label>
-            <input
-              id="thought-tags"
-              className="field"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="him, late-night"
-            />
-          </div>
-          <div>
-            <label htmlFor="thought-mood" className="mb-1 block text-xs tracking-widest text-faint">
-              MOOD <span className="normal-case">(optional)</span>
-            </label>
-            <input
-              id="thought-mood"
-              className="field"
-              value={mood}
-              onChange={(e) => setMood(e.target.value)}
-              maxLength={60}
-              placeholder="feral but soft"
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <label htmlFor="thought-category" className="mb-1 block text-xs tracking-widest text-faint">
+                  CATEGORY
+                </label>
+                <select
+                  id="thought-category"
+                  className="field"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="thought-tags" className="mb-1 block text-xs tracking-widest text-faint">
+                  TAGS <span className="normal-case">(comma separated)</span>
+                </label>
+                <input
+                  id="thought-tags"
+                  className="field"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder="him, late-night"
+                />
+              </div>
+              <div>
+                <label htmlFor="thought-mood" className="mb-1 block text-xs tracking-widest text-faint">
+                  MOOD <span className="normal-case">(optional)</span>
+                </label>
+                <input
+                  id="thought-mood"
+                  className="field"
+                  value={mood}
+                  onChange={(e) => setMood(e.target.value)}
+                  maxLength={60}
+                  placeholder="feral but soft"
+                />
+              </div>
+            </div>
 
-        <fieldset className="rounded border border-grid p-3">
-          <legend className="px-1 text-xs tracking-widest text-faint">
-            ♫ LISTENING TO WHILE WRITING (optional)
-          </legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <input
-              aria-label="artist"
-              className="field"
-              value={song.artist}
-              onChange={(e) => setSong({ ...song, artist: e.target.value })}
-              placeholder="artist"
-            />
-            <input
-              aria-label="song title"
-              className="field"
-              value={song.title}
-              onChange={(e) => setSong({ ...song, title: e.target.value })}
-              placeholder="song"
-            />
-            <input
-              aria-label="album"
-              className="field"
-              value={song.album}
-              onChange={(e) => setSong({ ...song, album: e.target.value })}
-              placeholder="album (optional)"
-            />
-            <input
-              aria-label="external link"
-              className="field"
-              value={song.externalUrl}
-              onChange={(e) => setSong({ ...song, externalUrl: e.target.value })}
-              placeholder="link (optional)"
-            />
-            <input
-              aria-label="artwork url"
-              className="field sm:col-span-2"
-              value={song.artworkUrl}
-              onChange={(e) => setSong({ ...song, artworkUrl: e.target.value })}
-              placeholder="artwork url (optional)"
-            />
+            <fieldset className="rounded border border-grid p-3">
+              <legend className="px-1 text-xs tracking-widest text-faint">
+                ♫ LISTENING TO WHILE WRITING (optional)
+              </legend>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  aria-label="artist"
+                  className="field"
+                  value={song.artist}
+                  onChange={(e) => setSong({ ...song, artist: e.target.value })}
+                  placeholder="artist"
+                />
+                <input
+                  aria-label="song title"
+                  className="field"
+                  value={song.title}
+                  onChange={(e) => setSong({ ...song, title: e.target.value })}
+                  placeholder="song"
+                />
+                <input
+                  aria-label="album"
+                  className="field"
+                  value={song.album}
+                  onChange={(e) => setSong({ ...song, album: e.target.value })}
+                  placeholder="album (optional)"
+                />
+                <input
+                  aria-label="external link"
+                  className="field"
+                  value={song.externalUrl}
+                  onChange={(e) => setSong({ ...song, externalUrl: e.target.value })}
+                  placeholder="link (optional)"
+                />
+                <input
+                  aria-label="artwork url"
+                  className="field sm:col-span-2"
+                  value={song.artworkUrl}
+                  onChange={(e) => setSong({ ...song, artworkUrl: e.target.value })}
+                  placeholder="artwork url (optional)"
+                />
+              </div>
+            </fieldset>
+
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="btn" disabled={busy} onClick={() => submit("draft")}>
+                {editing ? "save changes" : "save draft"}
+              </button>
+              {!editing && (
+                <button type="button" className="btn btn-primary" disabled={busy} onClick={() => submit("queue")}>
+                  save to queue
+                </button>
+              )}
+              {editing && editing.status === "DRAFT" && (
+                <button type="button" className="btn btn-primary" disabled={busy} onClick={() => submit("queue")}>
+                  save + queue
+                </button>
+              )}
+              {(!editing || ["DRAFT", "QUEUED", "SCHEDULED"].includes(editing.status)) && (
+                <button type="button" className="btn glow-pink" disabled={busy} onClick={() => submit("publish")}>
+                  publish now
+                </button>
+              )}
+            </div>
           </div>
-        </fieldset>
 
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn" disabled={busy} onClick={() => submit("draft")}>
-            {editing ? "save changes" : "save draft"}
-          </button>
-          {!editing && (
-            <button type="button" className="btn btn-primary" disabled={busy} onClick={() => submit("queue")}>
-              save to queue
-            </button>
-          )}
-          {editing && editing.status === "DRAFT" && (
-            <button type="button" className="btn btn-primary" disabled={busy} onClick={() => submit("queue")}>
-              save + queue
-            </button>
-          )}
-          {(!editing || ["DRAFT", "QUEUED", "SCHEDULED"].includes(editing.status)) && (
-            <button type="button" className="btn glow-pink" disabled={busy} onClick={() => submit("publish")}>
-              publish now
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-4 border-t border-grid pt-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs tracking-widest text-faint">LIVE PREVIEW — RECIPIENT TERMINAL</h3>
-          <button type="button" className="btn text-xs" onClick={() => setPreviewNonce((n) => n + 1)}>
-            replay
-          </button>
-        </div>
-        <div className="mt-2 rounded border border-grid bg-abyss p-3">
-          <p className="panel-title glow-green mb-2 text-sm tracking-widest">JAZ://THOUGHTS</p>
-          <TerminalScript
-            key={previewNonce}
-            segments={previewSegments}
-            className="text-sm sm:text-base"
-            showSkip={false}
-          />
-        </div>
-      </div>
+          <div className="mt-4 border-t border-grid pt-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs tracking-widest text-faint">LIVE PREVIEW — RECIPIENT TERMINAL</h3>
+              <button type="button" className="btn text-xs" onClick={() => setPreviewNonce((n) => n + 1)}>
+                replay
+              </button>
+            </div>
+            <div className="mt-2 rounded border border-grid bg-abyss p-3">
+              <p className="panel-title glow-green mb-2 text-sm tracking-widest">JAZ://THOUGHTS</p>
+              <TerminalScript
+                key={previewNonce}
+                segments={previewSegments}
+                className="text-sm sm:text-base"
+                showSkip={false}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }
