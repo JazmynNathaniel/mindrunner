@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { api } from "@/lib/api";
 import { mischiefBar, mischiefMeta } from "@/lib/mischief";
 import type { AdminReplyDTO } from "@/lib/types";
@@ -15,6 +16,9 @@ export function RepliesPanel({
   replies: AdminReplyDTO[];
   run: (fn: () => Promise<unknown>) => Promise<boolean>;
 }) {
+  // React-held so refresh() re-renders don't reset it, same as ThoughtList
+  const [open, setOpen] = useState(true);
+
   const act = (id: string, action: "decrypt" | "delete") =>
     run(() =>
       api(`/api/admin/replies/${id}/action`, {
@@ -26,9 +30,17 @@ export function RepliesPanel({
   return (
     <section className="panel p-4" aria-label="incoming transmissions">
       <h2 className="panel-title glow-cyan border-b border-grid pb-2 text-lg tracking-widest">
-        INCOMING TRANSMISSIONS
+        <button
+          type="button"
+          className="flex w-full cursor-pointer items-baseline gap-2 text-left tracking-widest hover:brightness-125"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span aria-hidden="true">{open ? "[-]" : "[+]"}</span>
+          <span>INCOMING TRANSMISSIONS :: {replies.length}</span>
+        </button>
       </h2>
-      {replies.length === 0 ? (
+      {open && (replies.length === 0 ? (
         <p className="mt-3 text-sm text-faint">&gt; the uplink is quiet. for now.</p>
       ) : (
         <ul className="mt-3 space-y-3">
@@ -70,7 +82,7 @@ export function RepliesPanel({
             );
           })}
         </ul>
-      )}
+      ))}
     </section>
   );
 }
