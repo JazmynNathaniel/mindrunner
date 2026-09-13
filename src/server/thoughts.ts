@@ -47,10 +47,12 @@ export function toAdminDTO(t: ThoughtWithSong): AdminThoughtDTO {
     scheduledFor: t.scheduledFor?.toISOString() ?? null,
     publishedAt: t.publishedAt?.toISOString() ?? null,
     expiresAt: t.expiresAt?.toISOString() ?? null,
+    // read receipt — spec §19's "no read receipts" was amended by the owner
+    // 2026-09-13; he is told on his terminal that she can see this
+    seenAt: t.seenAt?.toISOString() ?? null,
     queuePosition: t.queuePosition,
     song: t.song ? toSongDTO(t.song) : null,
   };
-  // note: seenAt deliberately omitted — no read receipts (spec §19)
 }
 
 /**

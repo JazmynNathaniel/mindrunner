@@ -50,7 +50,7 @@ model Thought {
   scheduledFor  DateTime? // server-side only; never exposed to the recipient
   publishedAt   DateTime?
   expiresAt     DateTime?
-  seenAt        DateTime? // first time the recipient decrypted it; never shown to admin (no read receipts)
+  seenAt        DateTime? // first time the recipient decrypted it; surfaced to admin as a read receipt (spec §19 amended 2026-09-13) — he is told she can see it
   queuePosition Int?
   songId        String?
   song          Song?     @relation(fields: [songId], references: [id], onDelete: SetNull)

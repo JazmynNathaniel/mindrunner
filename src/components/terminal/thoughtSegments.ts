@@ -58,6 +58,17 @@ export function buildThoughtSegments(t: ThoughtLike, alreadySeen: boolean): Segm
       segs.push({ text: line, className: "text-faint text-xs", charMs: 8 });
     }
   }
+  // mutual game, fully disclosed: reading stamps a receipt and he knows it
+  segs.push(
+    { text: "", pauseAfter: 120 },
+    {
+      text: alreadySeen
+        ? "> read receipt: already on file. she knows."
+        : "> read receipt: transmitted. she knows.",
+      className: "text-faint text-xs",
+      charMs: 8,
+    }
+  );
   return segs;
 }
 

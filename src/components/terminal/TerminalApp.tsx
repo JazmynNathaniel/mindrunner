@@ -275,6 +275,11 @@ function ThoughtTerminal({
         </button>
       </div>
       <div className="min-h-32">{body}</div>
+      {state?.snark && (
+        <p className="glow-lime mt-3 text-xs" role="status">
+          &gt; {state.snark}
+        </p>
+      )}
       {checkNote && (
         <p className="mt-3 text-xs text-faint" role="status">
           {checkNote}

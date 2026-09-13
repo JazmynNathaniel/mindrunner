@@ -115,6 +115,8 @@ export type BrainState = {
   thought: RecipientThoughtDTO | null;
   /** records currently in MEMORY BANKS (shown on the collapsed panel header) */
   archiveCount: number;
+  /** recipient-only: the machine's one-shot commentary on his absence / unread thought */
+  snark: string | null;
   nowPlaying: NowPlayingDTO | null;
   vitals: OperatorVitalsDTO;
   system: {
@@ -139,6 +141,8 @@ export type AdminThoughtDTO = {
   scheduledFor: string | null;
   publishedAt: string | null;
   expiresAt: string | null;
+  /** read receipt: when he first decrypted it (spec §19 amended by owner, 2026-09-13) */
+  seenAt: string | null;
   queuePosition: number | null;
   song: SongDTO | null;
 };

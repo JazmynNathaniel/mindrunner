@@ -107,6 +107,12 @@ export function ThoughtList({
                       {t.status === "SCHEDULED" && <>fires {fmtDate(t.scheduledFor)} · </>}
                       {t.status === "QUEUED" && <>position #{t.queuePosition ?? "?"} · </>}
                       {t.publishedAt && <>published {fmtDate(t.publishedAt)} · </>}
+                      {t.publishedAt &&
+                        (t.seenAt ? (
+                          <span className="glow-green">read {fmtDate(t.seenAt)} · </span>
+                        ) : (
+                          <span className="text-alert">UNREAD · </span>
+                        ))}
                       {t.status === "PUBLISHED" && (
                         <>expires {t.expiresAt ? fmtDate(t.expiresAt) : "when replaced"} · </>
                       )}

@@ -5,8 +5,8 @@ recipient. One person (Jaz) writes thoughts; the machine reveals them at unpredi
 he checks whenever he wants. A cybernetic greenhouse: terminal, music, flowers, cats with
 root access.
 
-Both parties know how it works — including that visits are counted. Mutual game, not
-surveillance.
+Both parties know how it works — including that visits are counted and that reads are
+receipted (his terminal says so to his face). Mutual game, not surveillance.
 
 ## Stack
 
@@ -55,8 +55,10 @@ Useful scripts:
 
 The thought lifecycle is `DRAFT → QUEUED → SCHEDULED → PUBLISHED → EXPIRED → ARCHIVED`.
 At most one thought is PUBLISHED and at most one is SCHEDULED. When a thought publishes,
-the next queued one is promoted to SCHEDULED at `now + random(min_interval, max_interval)`.
-If the queue is empty, the first thought queued later gets a fresh randomized slot from then.
+the next queued one is promoted to SCHEDULED at `now + chaos interval` — a log-uniform
+draw between 15 minutes and 72 hours, chosen entirely by the machine (the old min/max
+settings are retired). If the queue is empty, the first thought queued later gets a fresh
+randomized slot from then.
 
 State advances two ways, both calling the same idempotent, transactional `tick()`
 (`src/server/scheduler.ts`):

@@ -12,16 +12,27 @@ type Tx = Prisma.TransactionClient;
 //
 // At most one thought is SCHEDULED at a time; its `scheduledFor` IS the
 // server-side next_publish_at. When a thought publishes, the next queued
-// thought is immediately promoted to SCHEDULED at now + random(min, max).
+// thought is immediately promoted to SCHEDULED at now + a chaos interval.
 // If the queue is empty at that moment, nothing is scheduled; the first
 // thought queued later gets a fresh randomized time from *then* (spec §7).
 //
 // The exact scheduledFor time is never exposed through any recipient API.
+//
+// CHAOS CLOCK (owner directive 2026-09-13): publication gaps are completely
+// randomized. The draw is log-uniform between 15 minutes and 72 hours, so
+// rapid double-taps and multi-day droughts are both genuinely on the table
+// (median ≈ 4h; a uniform draw would almost never produce short gaps).
+// Settings.minIntervalMin/maxIntervalMin are retired from scheduling — the
+// columns remain but nothing reads them. Lifetime + selection mode still apply.
 // ---------------------------------------------------------------------------
 
-function randomIntervalMs(minMin: number, maxMin: number) {
-  const span = Math.max(0, maxMin - minMin);
-  return Math.round((minMin + Math.random() * span) * 60_000);
+const CHAOS_MIN_MS = 15 * 60_000;
+const CHAOS_MAX_MS = 72 * 60 * 60_000;
+
+function chaosIntervalMs() {
+  const lo = Math.log(CHAOS_MIN_MS);
+  const hi = Math.log(CHAOS_MAX_MS);
+  return Math.round(Math.exp(lo + Math.random() * (hi - lo)));
 }
 
 async function pickNextQueued(tx: Tx, selectionMode: string): Promise<Thought | null> {
@@ -45,9 +56,7 @@ export async function ensureScheduled(tx: Tx, now: Date, inheritSlot?: Date | nu
   const settings = await getSettings(tx);
   const next = await pickNextQueued(tx, settings.selectionMode);
   if (!next) return null;
-  const when =
-    inheritSlot ??
-    new Date(now.getTime() + randomIntervalMs(settings.minIntervalMin, settings.maxIntervalMin));
+  const when = inheritSlot ?? new Date(now.getTime() + chaosIntervalMs());
   return tx.thought.update({
     where: { id: next.id },
     data: { status: "SCHEDULED", scheduledFor: when },

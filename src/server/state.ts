@@ -3,6 +3,7 @@ import { prisma } from "./db";
 import { getDiagnostics } from "./diagnostics";
 import { musicService } from "./music";
 import { tick } from "./scheduler";
+import { pickSnark } from "./snark";
 import { getRecipientStats, recordVisit } from "./stats";
 import { countArchive, toRecipientDTO } from "./thoughts";
 import { getOperatorVitals } from "./vitals";
@@ -22,7 +23,8 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
   await tick();
 
   const isRecipient = user.role === "RECIPIENT";
-  if (isRecipient) await recordVisit(user.id, sessionId);
+  let prevVisitAt: Date | null = null;
+  if (isRecipient) prevVisitAt = await recordVisit(user.id, sessionId);
 
   const [published, scheduledCount, archiveCount, nowPlaying, stats, diagnostics, vitals] =
     await Promise.all([
@@ -52,6 +54,9 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
     mode: thought ? "thought" : scheduledCount > 0 ? "idle-scheduled" : "idle-empty",
     thought,
     archiveCount,
+    // computed from the PRE-stamp row: the reveal request itself carries the
+    // snark, and the very act of reading resets the conditions — one-shot
+    snark: isRecipient ? pickSnark(published, prevVisitAt) : null,
     nowPlaying,
     vitals,
     system: {
