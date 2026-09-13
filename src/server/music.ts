@@ -1,25 +1,13 @@
 import type { Song } from "@prisma/client";
+import type { NowPlayingDTO, SongDTO } from "@/lib/types";
 import { prisma } from "./db";
+import { isLastfmConfigured, LastfmMusicService } from "./lastfm";
 import type { DbClient } from "./settings";
 import { isSpotifyConfigured, SpotifyMusicService } from "./spotify";
 import type { SongInput } from "./validation";
 
-export type SongDTO = {
-  artist: string;
-  title: string;
-  album: string | null;
-  artworkUrl: string | null;
-  externalUrl: string | null;
-};
-
-export type NowPlayingDTO = SongDTO & {
-  updatedAt: string;
-  /** false = deck is idle; the song shown is the last one played */
-  isPlaying: boolean;
-  /** real playback position/length in seconds when the provider knows them */
-  progressSec: number | null;
-  durationSec: number | null;
-};
+// DTO shapes live in src/lib/types.ts; re-exported for the provider modules.
+export type { NowPlayingDTO, SongDTO } from "@/lib/types";
 
 export function toSongDTO(song: Song): SongDTO {
   return {
@@ -32,9 +20,10 @@ export function toSongDTO(song: Song): SongDTO {
 }
 
 /**
- * Music is isolated behind this interface; SpotifyMusicService is the real
- * provider and ManualMusicService is both the standalone fallback and the
- * write path (thought songs, admin fallback entry).
+ * Music is isolated behind this interface; LastfmMusicService and
+ * SpotifyMusicService are the real providers and ManualMusicService is both
+ * the standalone fallback and the write path (thought songs, admin fallback
+ * entry).
  */
 export interface MusicService {
   getNowPlaying(): Promise<NowPlayingDTO | null>;
@@ -102,6 +91,11 @@ class ManualMusicService implements MusicService {
 /** Write path + fallback display. The admin now-playing route edits this one. */
 export const manualMusicService: MusicService = new ManualMusicService();
 
-export const musicService: MusicService = isSpotifyConfigured()
-  ? new SpotifyMusicService(manualMusicService)
-  : manualMusicService;
+// Presence precedence: Last.fm first (it covers YouTube Music and anything
+// else that scrobbles), then Spotify, then the manual entry. Each layer
+// degrades gracefully to the next on absence or failure.
+export const musicService: MusicService = isLastfmConfigured()
+  ? new LastfmMusicService(manualMusicService)
+  : isSpotifyConfigured()
+    ? new SpotifyMusicService(manualMusicService)
+    : manualMusicService;

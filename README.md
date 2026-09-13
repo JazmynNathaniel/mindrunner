@@ -71,6 +71,18 @@ single due thought and schedules the next from *now*, so he never misses one.
 
 The recipient-facing API never exposes scheduling times, unpublished thoughts, or admin data.
 
+## Memory banks (the recipient archive)
+
+`GET /api/archive` serves every thought that finished airing (status `EXPIRED`) to the
+MEMORY BANKS panel on the terminal — searchable (`q`), filterable (`category`, `tag`),
+sortable (`sort=newest|oldest`), paginated (`offset`/`limit`). Design notes:
+
+- **ARCHIVED is invisible.** The admin "archive" action is the kill switch that retires a
+  record from his view.
+- **Chronology = when the thought was had.** Each record carries `thoughtAt` (`createdAt`,
+  the moment she wrote it); sorting and the hex index (`0x0001` = oldest) follow it.
+  Scheduling/airing times remain unexposed, per spec.
+
 ## Architecture
 
 ```
@@ -82,7 +94,7 @@ routes (src/app/api/**)  →  services (src/server/**)  →  Prisma  →  DB
 | auth & sessions | `src/server/auth.ts` |
 | scheduler (source of truth) | `src/server/scheduler.ts` |
 | thoughts CRUD + DTOs | `src/server/thoughts.ts` |
-| music (`MusicService` interface — Spotify presence with manual fallback) | `src/server/music.ts`, `src/server/spotify.ts` |
+| music (`MusicService` interface — Last.fm/Spotify presence with manual fallback) | `src/server/music.ts`, `src/server/lastfm.ts`, `src/server/spotify.ts` |
 | recipient state composition | `src/server/state.ts` |
 | stats / visit tracking | `src/server/stats.ts` |
 | input validation (zod) | `src/server/validation.ts` |

@@ -1,24 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { FoldToggle } from "@/components/FoldToggle";
 import { api } from "@/lib/api";
-import type { AdminThoughtDTO } from "@/lib/types";
+import { CATEGORIES, type AdminThoughtDTO } from "@/lib/types";
 import { buildThoughtSegments } from "@/components/terminal/thoughtSegments";
 import { TerminalScript } from "@/components/terminal/Typewriter";
-
-const CATEGORIES = [
-  "random",
-  "funny",
-  "flirty",
-  "philosophical",
-  "programming",
-  "unhinged",
-  "him",
-  "late-night",
-  "dance",
-  "music",
-  "cats",
-];
 
 type SongForm = { artist: string; title: string; album: string; artworkUrl: string; externalUrl: string };
 const emptySong: SongForm = { artist: "", title: "", album: "", artworkUrl: "", externalUrl: "" };
@@ -38,6 +25,8 @@ export function Composer({
   const [category, setCategory] = useState(editing?.category ?? "random");
   const [tags, setTags] = useState(editing?.tags.join(", ") ?? "");
   const [mood, setMood] = useState(editing?.mood ?? "");
+  const [doing, setDoing] = useState(editing?.doing ?? "");
+  const [location, setLocation] = useState(editing?.location ?? "");
   const [song, setSong] = useState<SongForm>(
     editing?.song
       ? {
@@ -64,6 +53,8 @@ export function Composer({
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean),
       mood: mood.trim() || null,
+      doing: doing.trim() || null,
+      location: location.trim() || null,
       song:
         song.artist.trim() && song.title.trim()
           ? {
@@ -123,6 +114,8 @@ export function Composer({
         {
           text: text.trim() || "…",
           mood: mood.trim() || null,
+          doing: doing.trim() || null,
+          location: location.trim() || null,
           song: song.artist.trim() && song.title.trim() ? { artist: song.artist.trim(), title: song.title.trim() } : null,
         },
         false
@@ -135,18 +128,10 @@ export function Composer({
     <section className="panel p-4 sm:p-5" aria-label="thought composer">
       <div className="flex items-center justify-between border-b border-grid pb-2">
         <h2 className="panel-title glow-green text-lg tracking-widest">
-          <button
-            type="button"
-            className="flex cursor-pointer items-baseline gap-2 text-left tracking-widest hover:brightness-125"
-            aria-expanded={open}
-            onClick={() => setOpen((o) => !o)}
-          >
-            <span aria-hidden="true">{open ? "[-]" : "[+]"}</span>
-            <span>
-              {editing ? `EDIT THOUGHT :: ${editing.status}` : "NEW THOUGHT"}
-              {!open && text.trim() && " :: unsaved"}
-            </span>
-          </button>
+          <FoldToggle open={open} onToggle={() => setOpen((o) => !o)} fullWidth={false}>
+            {editing ? `EDIT THOUGHT :: ${editing.status}` : "NEW THOUGHT"}
+            {!open && text.trim() && " :: unsaved"}
+          </FoldToggle>
         </h2>
         {editing && (
           <button type="button" className="btn text-xs" onClick={onCancelEdit}>
@@ -213,6 +198,35 @@ export function Composer({
                   onChange={(e) => setMood(e.target.value)}
                   maxLength={60}
                   placeholder="feral but soft"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="thought-doing" className="mb-1 block text-xs tracking-widest text-faint">
+                  WHAT I WAS DOING <span className="normal-case">(optional)</span>
+                </label>
+                <input
+                  id="thought-doing"
+                  className="field"
+                  value={doing}
+                  onChange={(e) => setDoing(e.target.value)}
+                  maxLength={120}
+                  placeholder="pretending to work"
+                />
+              </div>
+              <div>
+                <label htmlFor="thought-location" className="mb-1 block text-xs tracking-widest text-faint">
+                  WHERE I WAS <span className="normal-case">(optional)</span>
+                </label>
+                <input
+                  id="thought-location"
+                  className="field"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  maxLength={120}
+                  placeholder="the kitchen floor, emotionally"
                 />
               </div>
             </div>

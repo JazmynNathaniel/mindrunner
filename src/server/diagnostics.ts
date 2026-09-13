@@ -1,22 +1,14 @@
 import type { Diagnostics } from "@prisma/client";
+import type { DiagnosticsDTO } from "@/lib/types";
 import { prisma } from "./db";
 import type { DiagnosticsInput } from "./validation";
 
 /**
  * The machine's vitals — owner-authored fiction (spec §11). The recipient's
  * SYSTEM DIAGNOSTICS panel renders whatever mood Jaz last fed the machine.
+ * DTO shape lives in src/lib/types.ts; re-exported for server-side consumers.
  */
-export type DiagnosticsDTO = {
-  cpu: string;
-  memory: string;
-  storage: string;
-  uptime: string;
-  latency: string;
-  catInterference: string;
-  occupiedPct: number;
-  warning: string;
-  flora: string;
-};
+export type { DiagnosticsDTO } from "@/lib/types";
 
 function toDTO(d: Diagnostics): DiagnosticsDTO {
   return {

@@ -44,6 +44,8 @@ model Thought {
   category      String    @default("random")
   tags          String    @default("[]") // JSON-encoded string[]
   mood          String?
+  doing         String? // owner context: what she was doing when the thought struck
+  location      String? // owner context: where she was
   createdAt     DateTime  @default(now())
   scheduledFor  DateTime? // server-side only; never exposed to the recipient
   publishedAt   DateTime?

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { api } from "@/lib/api";
 import { getBooted, getBootedServer, setBooted, subscribeBooted } from "@/lib/bootFlag";
 import type { BrainState } from "@/lib/types";
+import { ArchivePanel } from "./ArchivePanel";
 import { BootSequence } from "./BootSequence";
 import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
@@ -143,6 +144,8 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
       />
 
       {state && <ReplyComposer thoughtId={state.thought?.id ?? null} />}
+
+      {state && <ArchivePanel archiveCount={state.archiveCount} />}
 
       {state?.nowPlaying && (
         <NowPlayingPanel

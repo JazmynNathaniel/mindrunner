@@ -52,6 +52,8 @@ async function getAccessToken(): Promise<string> {
       refresh_token: process.env.SPOTIFY_REFRESH_TOKEN!,
     }),
     cache: "no-store",
+    // hard timeout: a hung upstream must never stall the recipient's state read
+    signal: AbortSignal.timeout(5000),
   });
   if (!res.ok) throw new Error(`spotify token refresh failed: ${res.status}`);
   const data = (await res.json()) as { access_token: string; expires_in: number };
@@ -76,7 +78,11 @@ function toSong(track: SpotifyTrack): SongDTO {
 async function fetchPresence(): Promise<NowPlayingDTO | null> {
   const headers = { Authorization: `Bearer ${await getAccessToken()}` };
 
-  const live = await fetch(NOW_PLAYING_URL, { headers, cache: "no-store" });
+  const live = await fetch(NOW_PLAYING_URL, {
+    headers,
+    cache: "no-store",
+    signal: AbortSignal.timeout(5000),
+  });
   // 204 = nothing on the deck; podcast episodes (currently_playing_type
   // !== "track") have a different shape and fall through to recently-played
   if (live.status === 200) {
@@ -99,7 +105,11 @@ async function fetchPresence(): Promise<NowPlayingDTO | null> {
     throw new Error(`spotify currently-playing failed: ${live.status}`);
   }
 
-  const recent = await fetch(RECENTLY_PLAYED_URL, { headers, cache: "no-store" });
+  const recent = await fetch(RECENTLY_PLAYED_URL, {
+    headers,
+    cache: "no-store",
+    signal: AbortSignal.timeout(5000),
+  });
   if (!recent.ok) throw new Error(`spotify recently-played failed: ${recent.status}`);
   const data = (await recent.json()) as { items?: { track: SpotifyTrack; played_at: string }[] };
   const last = data.items?.[0];

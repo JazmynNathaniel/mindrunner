@@ -3,6 +3,8 @@ import type { Segment } from "./Typewriter";
 export type ThoughtLike = {
   text: string;
   mood?: string | null;
+  doing?: string | null;
+  location?: string | null;
   song?: { title: string; artist: string } | null;
 };
 
@@ -45,11 +47,16 @@ export function buildThoughtSegments(t: ThoughtLike, alreadySeen: boolean): Segm
     charMs: 30,
     pauseAfter: 200,
   });
-  if (t.mood) {
-    segs.push(
-      { text: "", pauseAfter: 100 },
-      { text: `> mood: ${t.mood}`, className: "text-faint text-xs", charMs: 8 }
-    );
+  const meta = [
+    t.mood ? `> mood: ${t.mood}` : null,
+    t.doing ? `> caught mid: ${t.doing}` : null,
+    t.location ? `> coordinates: ${t.location}` : null,
+  ].filter((m): m is string => m !== null);
+  if (meta.length > 0) {
+    segs.push({ text: "", pauseAfter: 100 });
+    for (const line of meta) {
+      segs.push({ text: line, className: "text-faint text-xs", charMs: 8 });
+    }
   }
   return segs;
 }

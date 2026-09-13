@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FoldToggle } from "@/components/FoldToggle";
 import { api } from "@/lib/api";
 import type { AdminThoughtDTO } from "@/lib/types";
 
@@ -80,17 +81,9 @@ export function ThoughtList({
         return (
           <div key={g.status} className="mt-4">
             <h3 className={`text-xs tracking-widest ${g.accent}`}>
-              <button
-                type="button"
-                className="flex w-full cursor-pointer items-baseline gap-2 text-left tracking-widest hover:brightness-125"
-                aria-expanded={open}
-                onClick={() => toggle(g.status)}
-              >
-                <span aria-hidden="true">{open ? "[-]" : "[+]"}</span>
-                <span>
-                  {g.title} :: {items.length}
-                </span>
-              </button>
+              <FoldToggle open={open} onToggle={() => toggle(g.status)}>
+                {g.title} :: {items.length}
+              </FoldToggle>
             </h3>
             {open && (
               <ul className="mt-2 space-y-2">
@@ -101,6 +94,8 @@ export function ThoughtList({
                       [{t.category}]
                       {t.tags.length > 0 && <> · tags: {t.tags.join(", ")}</>}
                       {t.mood && <> · mood: {t.mood}</>}
+                      {t.doing && <> · doing: {t.doing}</>}
+                      {t.location && <> · at: {t.location}</>}
                       {t.song && (
                         <>
                           {" "}

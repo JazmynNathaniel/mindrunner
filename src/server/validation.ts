@@ -1,19 +1,8 @@
 import { z } from "zod";
+import { CATEGORIES } from "@/lib/types";
 
-export const CATEGORIES = [
-  "random",
-  "funny",
-  "flirty",
-  "philosophical",
-  "programming",
-  "unhinged",
-  "him",
-  "late-night",
-  "dance",
-  "music",
-  "cats",
-] as const;
-export type Category = (typeof CATEGORIES)[number];
+// single source of truth is src/lib/types.ts (the UI selects use it too)
+export { CATEGORIES, type Category } from "@/lib/types";
 
 export const STATUSES = ["DRAFT", "QUEUED", "SCHEDULED", "PUBLISHED", "EXPIRED", "ARCHIVED"] as const;
 export type ThoughtStatus = (typeof STATUSES)[number];
@@ -55,6 +44,8 @@ export const thoughtInput = z.object({
     .max(8)
     .default([]),
   mood: z.preprocess(emptyToUndef, z.string().trim().max(60).nullish()), // null = clear on PATCH
+  doing: z.preprocess(emptyToUndef, z.string().trim().max(120).nullish()),
+  location: z.preprocess(emptyToUndef, z.string().trim().max(120).nullish()),
   song: songInput.nullish(),
   queue: z.boolean().default(false),
 });
@@ -90,6 +81,25 @@ export const diagnosticsInput = z.object({
   flora: z.string().trim().min(1).max(30),
 });
 export type DiagnosticsInput = z.infer<typeof diagnosticsInput>;
+
+// MEMORY BANKS query params (they arrive as strings, hence the coercion).
+export const archiveQuery = z.object({
+  q: z.preprocess(emptyToUndef, z.string().trim().max(200).optional()),
+  category: z.preprocess(emptyToUndef, z.enum(CATEGORIES).optional()),
+  tag: z.preprocess(
+    emptyToUndef,
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(/^[a-z0-9][a-z0-9-]{0,23}$/)
+      .optional()
+  ),
+  sort: z.preprocess(emptyToUndef, z.enum(["newest", "oldest"]).default("newest")),
+  offset: z.preprocess(emptyToUndef, z.coerce.number().int().min(0).default(0)),
+  limit: z.preprocess(emptyToUndef, z.coerce.number().int().min(1).max(50).default(20)),
+});
+export type ArchiveQuery = z.infer<typeof archiveQuery>;
 
 export const loginInput = z.object({
   username: z.string().trim().min(1).max(64),

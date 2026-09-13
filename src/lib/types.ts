@@ -1,4 +1,21 @@
-// Shared DTO types — the exact shapes the API returns to the browser.
+// Shared DTO types — the exact shapes the API returns to the browser —
+// plus the few constants both sides render/validate against.
+
+/** The one category list: zod validation and UI selects both draw from here. */
+export const CATEGORIES = [
+  "random",
+  "funny",
+  "flirty",
+  "philosophical",
+  "programming",
+  "unhinged",
+  "him",
+  "late-night",
+  "dance",
+  "music",
+  "cats",
+] as const;
+export type Category = (typeof CATEGORIES)[number];
 
 export type SongDTO = {
   artist: string;
@@ -23,6 +40,10 @@ export type RecipientThoughtDTO = {
   category: string;
   tags: string[];
   mood: string | null;
+  /** owner context: what she was doing when the thought struck */
+  doing: string | null;
+  /** owner context: where she was */
+  location: string | null;
   publishedAt: string;
   song: SongDTO | null;
   alreadySeen: boolean;
@@ -61,10 +82,39 @@ export type AdminOperatorVitalsDTO = OperatorVitalsDTO & {
   pings: string[];
 };
 
+/**
+ * One MEMORY BANKS record. Chronology follows the moment the thought was HAD
+ * (`thoughtAt` = when she wrote it), never when the machine aired it.
+ */
+export type ArchiveThoughtDTO = {
+  id: string;
+  /** 1-based ordinal in thought-had order (oldest = 1) */
+  index: number;
+  /** when she had the thought */
+  thoughtAt: string;
+  text: string;
+  category: string;
+  tags: string[];
+  mood: string | null;
+  doing: string | null;
+  location: string | null;
+  song: SongDTO | null;
+};
+
+export type ArchivePageDTO = {
+  entries: ArchiveThoughtDTO[];
+  /** records matching the current filters */
+  matched: number;
+  /** all records in the archive */
+  total: number;
+};
+
 export type BrainState = {
   /** thought = one is live; idle-scheduled = brain is processing; idle-empty = buffer empty */
   mode: "thought" | "idle-scheduled" | "idle-empty";
   thought: RecipientThoughtDTO | null;
+  /** records currently in MEMORY BANKS (shown on the collapsed panel header) */
+  archiveCount: number;
   nowPlaying: NowPlayingDTO | null;
   vitals: OperatorVitalsDTO;
   system: {
@@ -83,6 +133,8 @@ export type AdminThoughtDTO = {
   category: string;
   tags: string[];
   mood: string | null;
+  doing: string | null;
+  location: string | null;
   createdAt: string;
   scheduledFor: string | null;
   publishedAt: string | null;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FoldToggle } from "@/components/FoldToggle";
 import { api } from "@/lib/api";
 import { mischiefBar, mischiefMeta } from "@/lib/mischief";
 import type { AdminReplyDTO } from "@/lib/types";
@@ -30,15 +31,9 @@ export function RepliesPanel({
   return (
     <section className="panel p-4" aria-label="incoming transmissions">
       <h2 className="panel-title glow-cyan border-b border-grid pb-2 text-lg tracking-widest">
-        <button
-          type="button"
-          className="flex w-full cursor-pointer items-baseline gap-2 text-left tracking-widest hover:brightness-125"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
-          <span aria-hidden="true">{open ? "[-]" : "[+]"}</span>
-          <span>INCOMING TRANSMISSIONS :: {replies.length}</span>
-        </button>
+        <FoldToggle open={open} onToggle={() => setOpen((o) => !o)}>
+          INCOMING TRANSMISSIONS :: {replies.length}
+        </FoldToggle>
       </h2>
       {open && (replies.length === 0 ? (
         <p className="mt-3 text-sm text-faint">&gt; the uplink is quiet. for now.</p>

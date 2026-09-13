@@ -1,4 +1,8 @@
+import type { RecipientStats } from "@/lib/types";
 import { prisma } from "./db";
+
+// DTO shape lives in src/lib/types.ts; re-exported for server-side consumers.
+export type { RecipientStats } from "@/lib/types";
 
 /**
  * Visit tracking is a mutual game, not surveillance: both parties know checks
@@ -13,14 +17,6 @@ export async function recordVisit(userId: string, sessionId: string) {
   if (last && Date.now() - last.visitedAt.getTime() < 60_000) return;
   await prisma.visit.create({ data: { userId, sessionId } });
 }
-
-export type RecipientStats = {
-  checks: number;
-  sessions: number;
-  firstVisit: string | null;
-  lastVisit: string | null;
-  thoughtsServed: number;
-};
 
 export async function getRecipientStats(userId: string): Promise<RecipientStats> {
   const [checks, distinctSessions, first, last, thoughtsServed] = await Promise.all([
