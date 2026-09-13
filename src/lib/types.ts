@@ -117,8 +117,8 @@ export type BrainState = {
   archiveCount: number;
   /** recipient-only: the machine's one-shot commentary on his absence / unread thought */
   snark: string | null;
-  /** answered uplink threads, newest first (max 5) */
-  downlink: DownlinkThreadDTO[];
+  /** open comms channels, most recently active first */
+  channels: ChannelDTO[];
   nowPlaying: NowPlayingDTO | null;
   vitals: OperatorVitalsDTO;
   system: {
@@ -156,23 +156,36 @@ export type AdminReplyDTO = {
   mischief: number;
   createdAt: string;
   seenAt: string | null;
-  /** the downlink: her answer to this transmission (null = not answered) */
-  responseText: string | null;
-  respondedAt: string | null;
+  /** chat messages in this transmission's channel (0 = never answered) */
+  messageCount: number;
   /** what he was replying to, if it still exists */
   thoughtExcerpt: string | null;
 };
 
-/** One answered uplink thread, as the recipient sees it: his words, her answer. */
-export type DownlinkThreadDTO = {
+/** One message inside a comms channel. */
+export type ChatMessageDTO = {
   id: string;
-  /** his transmission (his own words — never redacted from him) */
-  sent: string;
+  sender: "OWNER" | "RECIPIENT";
+  text: string;
+  at: string;
+};
+
+/**
+ * One open comms channel: a chat room rooted on an uplink transmission.
+ * A room exists for the recipient only once the owner has posted in it.
+ */
+export type ChannelDTO = {
+  /** the root uplink's id — also the chat API path segment */
+  id: string;
+  /** what the opening transmission replied to, if anything (the room's topic) */
+  topic: string | null;
+  /** his opening transmission — the room's reason to exist */
+  rootText: string;
   mischief: number;
-  sentAt: string;
-  /** her answer */
-  response: string;
-  respondedAt: string;
+  openedAt: string;
+  lastAt: string;
+  lastFrom: "OWNER" | "RECIPIENT";
+  messageCount: number;
 };
 
 export type SettingsDTO = {

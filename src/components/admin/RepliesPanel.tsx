@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChatThread } from "@/components/ChatThread";
 import { FoldToggle } from "@/components/FoldToggle";
 import { api } from "@/lib/api";
 import { mischiefBar, mischiefMeta } from "@/lib/mischief";
@@ -8,9 +9,10 @@ import type { AdminReplyDTO } from "@/lib/types";
 
 /**
  * Incoming transmissions. Text arrives server-redacted; the mischief rating is
- * the only preview until "decrypt" is pressed — open at your own risk. Once
- * decrypted, a transmission can be answered: the downlink shows up on his
- * terminal. Re-sending overwrites (one response per transmission).
+ * the only preview until "decrypt" is pressed — open at your own risk. Every
+ * decrypted transmission is a comms channel: her first message opens the room
+ * on his terminal, and from then on it's a real chat. Nothing expires; purge
+ * deletes the whole room.
  */
 export function RepliesPanel({
   replies,
@@ -22,11 +24,11 @@ export function RepliesPanel({
   // React-held so refresh() re-renders don't reset it, same as ThoughtList
   const [open, setOpen] = useState(true);
 
-  const act = (id: string, body: { action: string; text?: string }) =>
+  const act = (id: string, action: "decrypt" | "delete") =>
     run(() =>
       api(`/api/admin/replies/${id}/action`, {
         method: "POST",
-        body: JSON.stringify(body),
+        body: JSON.stringify({ action }),
       })
     );
 
@@ -55,18 +57,10 @@ function ReplyItem({
   act,
 }: {
   r: AdminReplyDTO;
-  act: (id: string, body: { action: string; text?: string }) => Promise<boolean>;
+  act: (id: string, action: "decrypt" | "delete") => Promise<boolean>;
 }) {
   const meta = mischiefMeta(r.mischief);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-
-  async function sendResponse() {
-    const text = draft.trim();
-    if (!text) return;
-    const ok = await act(r.id, { action: "respond", text });
-    if (ok) setEditing(false);
-  }
+  const [channelOpen, setChannelOpen] = useState(false);
 
   return (
     <li className="rounded border border-grid p-3 text-sm">
@@ -86,59 +80,28 @@ function ReplyItem({
           <span className="text-dim" aria-hidden="true">
             ▓▓▓▓▓▓▓▓▓▓▓▓▓▓ [ encrypted ]
           </span>
-          <button type="button" className="btn text-xs" onClick={() => act(r.id, { action: "decrypt" })}>
+          <button type="button" className="btn text-xs" onClick={() => act(r.id, "decrypt")}>
             decrypt
           </button>
         </div>
       )}
 
-      {r.text !== null && r.responseText && !editing && (
-        <div className="mt-2 rounded border border-grid p-2">
-          <p className="text-xs text-faint">
-            you answered :: {r.respondedAt ? new Date(r.respondedAt).toLocaleString() : ""}
-          </p>
-          <p className="glow-green mt-1 whitespace-pre-wrap">{r.responseText}</p>
-        </div>
-      )}
-
-      {r.text !== null && editing && (
-        <div className="mt-2">
-          <textarea
-            className="field min-h-16 resize-y"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={1000}
-            placeholder="answer the transmission…"
-            aria-label="response text"
-          />
-          <div className="mt-2 flex gap-2">
-            <button type="button" className="btn btn-primary text-xs" onClick={sendResponse}>
-              send downlink
-            </button>
-            <button type="button" className="btn text-xs" onClick={() => setEditing(false)}>
-              cancel
-            </button>
-          </div>
-        </div>
-      )}
+      {r.text !== null && channelOpen && <ChatThread channelId={r.id} viewer="OWNER" />}
 
       <div className="mt-2 flex flex-wrap justify-end gap-2">
-        {r.text !== null && !editing && (
-          <button
-            type="button"
-            className="btn text-xs"
-            onClick={() => {
-              setDraft(r.responseText ?? "");
-              setEditing(true);
-            }}
-          >
-            {r.responseText ? "edit response" : "respond"}
+        {r.text !== null && (
+          <button type="button" className="btn text-xs" onClick={() => setChannelOpen((o) => !o)}>
+            {channelOpen
+              ? "close channel"
+              : r.messageCount > 0
+                ? `open channel :: ${r.messageCount}`
+                : "open channel"}
           </button>
         )}
         <button
           type="button"
           className="btn btn-danger text-xs"
-          onClick={() => act(r.id, { action: "delete" })}
+          onClick={() => act(r.id, "delete")}
         >
           purge
         </button>

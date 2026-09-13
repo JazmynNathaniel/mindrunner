@@ -64,17 +64,32 @@ model Thought {
 // text is decrypted, which is the entire point. Text stays server-redacted
 // until seenAt is stamped by an explicit decrypt.
 model Reply {
-  id           String    @id @default(uuid())
+  id           String        @id @default(uuid())
   text         String
-  mischief     Int       @default(1) // 1..5, validated in src/server/validation.ts
-  createdAt    DateTime  @default(now())
+  mischief     Int           @default(1) // 1..5, validated in src/server/validation.ts
+  createdAt    DateTime      @default(now())
   seenAt       DateTime? // when the owner dared to open it
-  responseText String? // the downlink: her answer to his transmission (decrypt-gated)
-  respondedAt  DateTime?
+  responseText String? // LEGACY pre-chat downlink — carried into ChatMessage by 20260913150000; no longer read
+  respondedAt  DateTime? // LEGACY, see responseText
   thoughtId    String?
-  thought      Thought?  @relation(fields: [thoughtId], references: [id], onDelete: SetNull)
+  thought      Thought?      @relation(fields: [thoughtId], references: [id], onDelete: SetNull)
+  messages     ChatMessage[]
 
   @@index([createdAt])
+}
+
+// COMMS: every uplink transmission is a potential chat room. The owner's first
+// message opens the channel; after that both parties post freely and nothing
+// expires. Purging the root Reply deletes the whole room (cascade).
+model ChatMessage {
+  id        String   @id @default(uuid())
+  replyId   String
+  reply     Reply    @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  sender    String // "OWNER" | "RECIPIENT" (validated string, engine-portable)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([replyId, createdAt])
 }
 
 model Song {

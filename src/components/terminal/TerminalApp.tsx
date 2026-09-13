@@ -10,8 +10,8 @@ import { ArchivePanel } from "./ArchivePanel";
 import { BootSequence } from "./BootSequence";
 import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
+import { CommsPanel } from "./CommsPanel";
 import { DiagnosticsPanel } from "./DiagnosticsPanel";
-import { DownlinkPanel } from "./DownlinkPanel";
 import { NowPlayingPanel } from "./NowPlayingPanel";
 import { OperatorVitalsPanel } from "./OperatorVitalsPanel";
 import { ReplyComposer } from "./ReplyComposer";
@@ -146,7 +146,7 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
 
       {state && <ReplyComposer thoughtId={state.thought?.id ?? null} />}
 
-      {state && <DownlinkPanel threads={state.downlink} />}
+      {state && <CommsPanel channels={state.channels} isAdmin={isAdmin} />}
 
       {state && <ArchivePanel archiveCount={state.archiveCount} />}
 

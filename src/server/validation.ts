@@ -117,15 +117,14 @@ export const replyInput = z.object({
 });
 export type ReplyInput = z.infer<typeof replyInput>;
 
-export const replyAction = z
-  .object({
-    action: z.enum(["decrypt", "delete", "respond"]),
-    text: z.preprocess(emptyToUndef, z.string().trim().max(1000).optional()),
-  })
-  .refine((v) => v.action !== "respond" || !!v.text, {
-    message: "a response needs words.",
-    path: ["text"],
-  });
+export const replyAction = z.object({
+  action: z.enum(["decrypt", "delete"]),
+});
+
+// COMMS: one chat message (answering moved from the respond action to chat)
+export const chatMessageInput = z.object({
+  text: z.string().trim().min(1).max(1000),
+});
 
 export const vitalsAction = z
   .object({

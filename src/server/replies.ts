@@ -1,10 +1,10 @@
 import type { Reply } from "@prisma/client";
 import { prisma } from "./db";
-import { badRequest, notFound } from "./errors";
+import { notFound } from "./errors";
 import type { ReplyInput } from "./validation";
-import type { AdminReplyDTO, DownlinkThreadDTO } from "@/lib/types";
+import type { AdminReplyDTO } from "@/lib/types";
 
-type ReplyRow = Reply & { thought: { text: string } | null };
+type ReplyRow = Reply & { thought: { text: string } | null; _count: { messages: number } };
 
 const EXCERPT_LEN = 90;
 
@@ -17,8 +17,7 @@ function toDTO(r: ReplyRow): AdminReplyDTO {
     mischief: r.mischief,
     createdAt: r.createdAt.toISOString(),
     seenAt: r.seenAt?.toISOString() ?? null,
-    responseText: r.responseText,
-    respondedAt: r.respondedAt?.toISOString() ?? null,
+    messageCount: r._count.messages,
     thoughtExcerpt: r.thought
       ? r.thought.text.length > EXCERPT_LEN
         ? `${r.thought.text.slice(0, EXCERPT_LEN)}...`
@@ -46,7 +45,7 @@ export async function listReplies(): Promise<AdminReplyDTO[]> {
   const rows = await prisma.reply.findMany({
     orderBy: { createdAt: "desc" },
     take: 200,
-    include: { thought: { select: { text: true } } },
+    include: { thought: { select: { text: true } }, _count: { select: { messages: true } } },
   });
   return rows.map(toDTO);
 }
@@ -56,45 +55,14 @@ export async function decryptReply(id: string): Promise<AdminReplyDTO> {
   await prisma.reply.updateMany({ where: { id, seenAt: null }, data: { seenAt: new Date() } });
   const row = await prisma.reply.findUnique({
     where: { id },
-    include: { thought: { select: { text: true } } },
+    include: { thought: { select: { text: true } }, _count: { select: { messages: true } } },
   });
   if (!row) throw notFound("transmission");
   return toDTO(row);
 }
 
-/**
- * The downlink: her answer to one of his transmissions. Decrypt-gated —
- * answering something she hasn't read would break the whole ritual. Sending
- * again overwrites (one response per transmission; he can always uplink more).
- */
-export async function respondToReply(id: string, text: string): Promise<AdminReplyDTO> {
-  const existing = await prisma.reply.findUnique({ where: { id } });
-  if (!existing) throw notFound("transmission");
-  if (!existing.seenAt) throw badRequest("decrypt the transmission before answering it.");
-  const row = await prisma.reply.update({
-    where: { id },
-    data: { responseText: text, respondedAt: new Date() },
-    include: { thought: { select: { text: true } } },
-  });
-  return toDTO(row);
-}
-
-/** Recipient-facing: his transmissions that earned an answer, newest first. */
-export async function listDownlink(): Promise<DownlinkThreadDTO[]> {
-  const rows = await prisma.reply.findMany({
-    where: { respondedAt: { not: null } },
-    orderBy: { respondedAt: "desc" },
-    take: 5,
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    sent: r.text,
-    mischief: r.mischief,
-    sentAt: r.createdAt.toISOString(),
-    response: r.responseText ?? "",
-    respondedAt: r.respondedAt!.toISOString(),
-  }));
-}
+// Answering a transmission lives in src/server/chat.ts now: her first chat
+// message is what opens the channel (the pre-chat responseText era is over).
 
 export async function deleteReply(id: string): Promise<void> {
   try {

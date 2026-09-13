@@ -51,6 +51,13 @@ Useful scripts:
    API request runs the same `tick()` lazily, so state is always correct whenever anyone
    actually looks.
 
+## Comms (chat channels)
+
+Every uplink transmission is a potential chat room (`ChatMessage` rows rooted on the
+`Reply`). The owner must decrypt the root before entering; her first message opens the
+channel on his terminal, and from then on both post freely via `GET/POST /api/chat/[id]`.
+Nothing expires — purging the root transmission cascades the whole room away.
+
 ## How the scheduler works
 
 The thought lifecycle is `DRAFT → QUEUED → SCHEDULED → PUBLISHED → EXPIRED → ARCHIVED`.
