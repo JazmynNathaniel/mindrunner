@@ -1,8 +1,8 @@
 import type { Reply } from "@prisma/client";
 import { prisma } from "./db";
-import { notFound } from "./errors";
+import { badRequest, notFound } from "./errors";
 import type { ReplyInput } from "./validation";
-import type { AdminReplyDTO } from "@/lib/types";
+import type { AdminReplyDTO, DownlinkThreadDTO } from "@/lib/types";
 
 type ReplyRow = Reply & { thought: { text: string } | null };
 
@@ -17,6 +17,8 @@ function toDTO(r: ReplyRow): AdminReplyDTO {
     mischief: r.mischief,
     createdAt: r.createdAt.toISOString(),
     seenAt: r.seenAt?.toISOString() ?? null,
+    responseText: r.responseText,
+    respondedAt: r.respondedAt?.toISOString() ?? null,
     thoughtExcerpt: r.thought
       ? r.thought.text.length > EXCERPT_LEN
         ? `${r.thought.text.slice(0, EXCERPT_LEN)}...`
@@ -58,6 +60,40 @@ export async function decryptReply(id: string): Promise<AdminReplyDTO> {
   });
   if (!row) throw notFound("transmission");
   return toDTO(row);
+}
+
+/**
+ * The downlink: her answer to one of his transmissions. Decrypt-gated —
+ * answering something she hasn't read would break the whole ritual. Sending
+ * again overwrites (one response per transmission; he can always uplink more).
+ */
+export async function respondToReply(id: string, text: string): Promise<AdminReplyDTO> {
+  const existing = await prisma.reply.findUnique({ where: { id } });
+  if (!existing) throw notFound("transmission");
+  if (!existing.seenAt) throw badRequest("decrypt the transmission before answering it.");
+  const row = await prisma.reply.update({
+    where: { id },
+    data: { responseText: text, respondedAt: new Date() },
+    include: { thought: { select: { text: true } } },
+  });
+  return toDTO(row);
+}
+
+/** Recipient-facing: his transmissions that earned an answer, newest first. */
+export async function listDownlink(): Promise<DownlinkThreadDTO[]> {
+  const rows = await prisma.reply.findMany({
+    where: { respondedAt: { not: null } },
+    orderBy: { respondedAt: "desc" },
+    take: 5,
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    sent: r.text,
+    mischief: r.mischief,
+    sentAt: r.createdAt.toISOString(),
+    response: r.responseText ?? "",
+    respondedAt: r.respondedAt!.toISOString(),
+  }));
 }
 
 export async function deleteReply(id: string): Promise<void> {

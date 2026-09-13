@@ -64,13 +64,15 @@ model Thought {
 // text is decrypted, which is the entire point. Text stays server-redacted
 // until seenAt is stamped by an explicit decrypt.
 model Reply {
-  id        String    @id @default(uuid())
-  text      String
-  mischief  Int       @default(1) // 1..5, validated in src/server/validation.ts
-  createdAt DateTime  @default(now())
-  seenAt    DateTime? // when the owner dared to open it
-  thoughtId String?
-  thought   Thought?  @relation(fields: [thoughtId], references: [id], onDelete: SetNull)
+  id           String    @id @default(uuid())
+  text         String
+  mischief     Int       @default(1) // 1..5, validated in src/server/validation.ts
+  createdAt    DateTime  @default(now())
+  seenAt       DateTime? // when the owner dared to open it
+  responseText String? // the downlink: her answer to his transmission (decrypt-gated)
+  respondedAt  DateTime?
+  thoughtId    String?
+  thought      Thought?  @relation(fields: [thoughtId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
 }

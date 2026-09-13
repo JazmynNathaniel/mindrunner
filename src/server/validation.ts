@@ -117,9 +117,15 @@ export const replyInput = z.object({
 });
 export type ReplyInput = z.infer<typeof replyInput>;
 
-export const replyAction = z.object({
-  action: z.enum(["decrypt", "delete"]),
-});
+export const replyAction = z
+  .object({
+    action: z.enum(["decrypt", "delete", "respond"]),
+    text: z.preprocess(emptyToUndef, z.string().trim().max(1000).optional()),
+  })
+  .refine((v) => v.action !== "respond" || !!v.text, {
+    message: "a response needs words.",
+    path: ["text"],
+  });
 
 export const vitalsAction = z
   .object({

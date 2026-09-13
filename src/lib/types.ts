@@ -117,6 +117,8 @@ export type BrainState = {
   archiveCount: number;
   /** recipient-only: the machine's one-shot commentary on his absence / unread thought */
   snark: string | null;
+  /** answered uplink threads, newest first (max 5) */
+  downlink: DownlinkThreadDTO[];
   nowPlaying: NowPlayingDTO | null;
   vitals: OperatorVitalsDTO;
   system: {
@@ -154,8 +156,23 @@ export type AdminReplyDTO = {
   mischief: number;
   createdAt: string;
   seenAt: string | null;
+  /** the downlink: her answer to this transmission (null = not answered) */
+  responseText: string | null;
+  respondedAt: string | null;
   /** what he was replying to, if it still exists */
   thoughtExcerpt: string | null;
+};
+
+/** One answered uplink thread, as the recipient sees it: his words, her answer. */
+export type DownlinkThreadDTO = {
+  id: string;
+  /** his transmission (his own words — never redacted from him) */
+  sent: string;
+  mischief: number;
+  sentAt: string;
+  /** her answer */
+  response: string;
+  respondedAt: string;
 };
 
 export type SettingsDTO = {
