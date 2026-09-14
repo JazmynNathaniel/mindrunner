@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GifBlock, SongLinkCard } from "@/components/Attachments";
 import { ChatThread } from "@/components/ChatThread";
 import { FoldToggle } from "@/components/FoldToggle";
 import { mischiefMeta } from "@/lib/mischief";
@@ -41,7 +42,11 @@ export function CommsPanel({ channels, isAdmin }: { channels: ChannelDTO[]; isAd
                   <h3 className="text-sm">
                     <FoldToggle open={roomOpen} onToggle={() => toggleRoom(c.id)}>
                       <span className="glow-cyan">
-                        {c.topic ? `re: "${c.topic}"` : `"${c.rootText.length > 60 ? `${c.rootText.slice(0, 60)}...` : c.rootText}"`}
+                        {c.topic
+                          ? `re: "${c.topic}"`
+                          : c.rootText
+                            ? `"${c.rootText.length > 60 ? `${c.rootText.slice(0, 60)}...` : c.rootText}"`
+                            : "[gif transmission]"}
                       </span>{" "}
                       <span className="text-xs text-faint">
                         :: {c.messageCount} msg{c.messageCount === 1 ? "" : "s"} · last{" "}
@@ -58,7 +63,11 @@ export function CommsPanel({ channels, isAdmin }: { channels: ChannelDTO[]; isAd
                             {c.mischief}/5 {meta.label}
                           </span>
                         </p>
-                        <p className="mt-1 whitespace-pre-wrap text-dim">{c.rootText}</p>
+                        {c.rootText && (
+                          <p className="mt-1 whitespace-pre-wrap text-dim">{c.rootText}</p>
+                        )}
+                        {c.songUrl && <SongLinkCard url={c.songUrl} />}
+                        {c.gifUrl && <GifBlock url={c.gifUrl} />}
                       </div>
                       <ChatThread channelId={c.id} viewer={isAdmin ? "OWNER" : "RECIPIENT"} />
                     </>

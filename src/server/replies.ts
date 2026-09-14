@@ -17,6 +17,12 @@ function toDTO(r: ReplyRow): AdminReplyDTO {
     mischief: r.mischief,
     createdAt: r.createdAt.toISOString(),
     seenAt: r.seenAt?.toISOString() ?? null,
+    // sealed-attachment teasers work like the mischief meter: she knows THAT
+    // something rides along before she knows WHAT
+    hasSong: r.songUrl !== null,
+    hasGif: r.gifUrl !== null,
+    songUrl: r.seenAt ? r.songUrl : null,
+    gifUrl: r.seenAt ? r.gifUrl : null,
     messageCount: r._count.messages,
     thoughtExcerpt: r.thought
       ? r.thought.text.length > EXCERPT_LEN
@@ -37,7 +43,13 @@ export async function createReply(input: ReplyInput): Promise<void> {
     thoughtId = t?.id ?? null;
   }
   await prisma.reply.create({
-    data: { text: input.text, mischief: input.mischief, thoughtId },
+    data: {
+      text: input.text,
+      mischief: input.mischief,
+      thoughtId,
+      songUrl: input.songUrl ?? null,
+      gifUrl: input.gifUrl ?? null,
+    },
   });
 }
 

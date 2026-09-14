@@ -24,6 +24,6 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
   const { user, session } = await requireUser();
   if (!rateLimit(`chat-post:${session.id}`, 20, 60_000)) throw tooMany();
   const { id } = await ctx.params;
-  const { text } = chatMessageInput.parse(await req.json());
-  return json({ messages: await postMessage(id, user.role, text) });
+  const { text, kind } = chatMessageInput.parse(await req.json());
+  return json({ messages: await postMessage(id, user.role, text, kind) });
 });

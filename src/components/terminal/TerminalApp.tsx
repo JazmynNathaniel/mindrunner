@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { api } from "@/lib/api";
 import { getBooted, getBootedServer, setBooted, subscribeBooted } from "@/lib/bootFlag";
+import { usePrefs, type PanelKey } from "@/lib/prefs";
 import type { BrainState } from "@/lib/types";
+import { SirenPanel } from "@/components/SirenPanel";
 import { ArchivePanel } from "./ArchivePanel";
 import { BootSequence } from "./BootSequence";
 import { CatCorners } from "./CatCorners";
 import { CatLayer } from "./CatLayer";
 import { CommsPanel } from "./CommsPanel";
-import { DiagnosticsPanel } from "./DiagnosticsPanel";
 import { NowPlayingPanel } from "./NowPlayingPanel";
 import { OperatorVitalsPanel } from "./OperatorVitalsPanel";
 import { ReplyComposer } from "./ReplyComposer";
@@ -22,6 +23,7 @@ import { TerminalScript } from "./Typewriter";
 export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
   const router = useRouter();
   const booted = useSyncExternalStore(subscribeBooted, getBooted, getBootedServer);
+  const prefs = usePrefs();
   const [state, setState] = useState<BrainState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkNote, setCheckNote] = useState<string | null>(null);
@@ -114,6 +116,34 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
     return <BootSequence onDone={() => setBooted(true)} />;
   }
 
+  // Panel stack — order and visibility come from /settings (per-device prefs).
+  // A key mapping to null (no data yet / nothing to show) renders nothing.
+  const panels: Record<PanelKey, React.ReactNode> = {
+    thoughts: (
+      <ThoughtTerminal
+        state={state}
+        error={error}
+        seenFlags={seenFlags}
+        onRecheck={recheck}
+        busy={busy}
+        checkNote={checkNote}
+      />
+    ),
+    siren: <SirenPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
+    uplink: state ? <ReplyComposer thoughtId={state.thought?.id ?? null} /> : null,
+    comms: state ? <CommsPanel channels={state.channels} isAdmin={isAdmin} /> : null,
+    archive: state ? <ArchivePanel archiveCount={state.archiveCount} /> : null,
+    "now-playing": state?.nowPlaying ? (
+      <NowPlayingPanel
+        song={state.nowPlaying}
+        label={
+          state.nowPlaying.isPlaying ? "JAZ IS CURRENTLY LISTENING TO" : "JAZ WAS LAST LISTENING TO"
+        }
+      />
+    ) : null,
+    vitals: state ? <OperatorVitalsPanel vitals={state.vitals} /> : null,
+  };
+
   return (
     <main className="crt flicker mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-4 p-3 sm:p-6">
       <header className="flex flex-wrap items-center justify-between gap-2">
@@ -124,6 +154,9 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
           </p>
         </div>
         <nav className="flex items-center gap-2">
+          <Link href="/settings" className="btn no-underline">
+            settings
+          </Link>
           {isAdmin && (
             <Link href="/admin" className="btn no-underline">
               admin
@@ -135,75 +168,8 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
         </nav>
       </header>
 
-      <ThoughtTerminal
-        state={state}
-        error={error}
-        seenFlags={seenFlags}
-        onRecheck={recheck}
-        busy={busy}
-        checkNote={checkNote}
-      />
-
-      {state && <ReplyComposer thoughtId={state.thought?.id ?? null} />}
-
-      {state && <CommsPanel channels={state.channels} isAdmin={isAdmin} />}
-
-      {state && <ArchivePanel archiveCount={state.archiveCount} />}
-
-      {state?.nowPlaying && (
-        <NowPlayingPanel
-          song={state.nowPlaying}
-          label={
-            state.nowPlaying.isPlaying
-              ? "JAZ IS CURRENTLY LISTENING TO"
-              : "JAZ WAS LAST LISTENING TO"
-          }
-        />
-      )}
-
-      {state && <OperatorVitalsPanel vitals={state.vitals} />}
-
-      {state && (
-        <>
-          <section
-            className="panel flex flex-wrap gap-x-6 gap-y-1 p-4 text-xs sm:text-sm"
-            aria-label="system status"
-          >
-            <span>
-              COLONY :: <span className="glow-lime">{state.system.flora}</span>
-            </span>
-            <span>
-              CAT_PROCS ::{" "}
-              <span className="glow-cyan">{state.system.catProcesses.length} RUNNING</span>
-            </span>
-            <span>
-              THOUGHTS_SERVED :: <span className="glow-pink">{state.system.thoughtsServed}</span>
-            </span>
-          </section>
-
-          <section className="panel p-4" aria-label="brain access stats">
-            <h2 className="panel-title glow-violet text-lg tracking-widest">BRAIN ACCESS</h2>
-            <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-3">
-              <div>
-                <dt className="text-xs text-faint">CHECKS</dt>
-                <dd className="glow-green text-xl">{state.stats.checks}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-faint">THOUGHTS</dt>
-                <dd className="glow-pink text-xl">{state.stats.thoughtsServed}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-faint">SESSIONS</dt>
-                <dd className="glow-cyan text-xl">{state.stats.sessions}</dd>
-              </div>
-            </dl>
-            <p className="mt-3 text-xs text-faint">
-              obsession coefficient :: √(feelings) — unmeasurable. we both know why you&apos;re here.
-            </p>
-          </section>
-
-          <DiagnosticsPanel d={state.system.diagnostics} />
-        </>
+      {prefs.order.map((key) =>
+        prefs.hidden.includes(key) ? null : <Fragment key={key}>{panels[key]}</Fragment>
       )}
 
       <CatLayer />

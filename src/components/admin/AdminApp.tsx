@@ -13,6 +13,7 @@ import type {
   SettingsDTO,
   SongDTO,
 } from "@/lib/types";
+import { SirenPanel } from "@/components/SirenPanel";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
 import { OperatorCareForm } from "./OperatorCareForm";
@@ -99,6 +100,9 @@ export function AdminApp() {
           <p className="text-xs tracking-widest text-dim">write. queue. let the machine decide when.</p>
         </div>
         <nav className="flex items-center gap-2">
+          <Link href="/settings" className="btn no-underline">
+            settings
+          </Link>
           <Link href="/" className="btn no-underline">
             terminal view
           </Link>
@@ -116,6 +120,9 @@ export function AdminApp() {
           </button>
         </p>
       )}
+
+      {/* full-width and above everything: when it blares, it is the room */}
+      <SirenPanel role="OWNER" />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="flex flex-col gap-4 lg:col-span-3">

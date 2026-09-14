@@ -25,6 +25,7 @@ function toMessageDTO(m: ChatMessage): ChatMessageDTO {
   return {
     id: m.id,
     sender: m.sender as Sender,
+    kind: m.kind as ChatMessageDTO["kind"],
     text: m.text,
     at: m.createdAt.toISOString(),
   };
@@ -65,6 +66,8 @@ export async function listChannels(): Promise<ChannelDTO[]> {
         id: r.id,
         topic: r.thought ? excerpt(r.thought.text) : null,
         rootText: r.text,
+        songUrl: r.songUrl,
+        gifUrl: r.gifUrl,
         mischief: r.mischief,
         openedAt: r.createdAt.toISOString(),
         lastAt: (last?.createdAt ?? r.createdAt).toISOString(),
@@ -88,11 +91,12 @@ export async function getMessages(replyId: string, role: string): Promise<ChatMe
 export async function postMessage(
   replyId: string,
   role: string,
-  text: string
+  text: string,
+  kind: ChatMessageDTO["kind"] = "TEXT"
 ): Promise<ChatMessageDTO[]> {
   await requireAccess(replyId, role);
   await prisma.chatMessage.create({
-    data: { replyId, sender: senderForRole(role), text },
+    data: { replyId, sender: senderForRole(role), text, kind },
   });
   return getMessages(replyId, role);
 }

@@ -21,6 +21,18 @@ const httpUrl = z.preprocess(
     .optional()
 );
 
+// https only — gif urls render as <img src>, and http would be mixed content.
+const httpsUrl = z.preprocess(
+  emptyToUndef,
+  z
+    .string()
+    .trim()
+    .max(500)
+    .url()
+    .refine((u) => /^https:\/\//i.test(u), { message: "must be an https url" })
+    .optional()
+);
+
 export const songInput = z.object({
   artist: z.string().trim().min(1).max(200),
   title: z.string().trim().min(1).max(200),
@@ -110,20 +122,59 @@ export const thoughtAction = z.object({
   action: z.enum(["queue", "unqueue", "publish", "expire", "archive"]),
 });
 
-export const replyInput = z.object({
-  text: z.string().trim().min(1).max(1000),
-  mischief: z.number().int().min(1).max(5),
-  thoughtId: z.string().uuid().nullish(),
-});
+export const replyInput = z
+  .object({
+    // "" allowed: a transmission may be nothing but a gif
+    text: z.string().trim().max(1000).default(""),
+    mischief: z.number().int().min(1).max(5),
+    thoughtId: z.string().uuid().nullish(),
+    songUrl: httpUrl, // AUDIO_REF — any http(s) music link, rendered as <a>
+    gifUrl: httpsUrl, // rendered as <img>, so https only
+  })
+  .refine((r) => r.text.length > 0 || !!r.gifUrl, {
+    message: "a transmission needs text or a gif",
+    path: ["text"],
+  });
 export type ReplyInput = z.infer<typeof replyInput>;
 
 export const replyAction = z.object({
   action: z.enum(["decrypt", "delete"]),
 });
 
-// COMMS: one chat message (answering moved from the respond action to chat)
-export const chatMessageInput = z.object({
-  text: z.string().trim().min(1).max(1000),
+// COMMS: one chat message (answering moved from the respond action to chat).
+// kind GIF = the text IS the gif's https url and renders as <img>.
+export const chatMessageInput = z
+  .object({
+    text: z.string().trim().min(1).max(1000),
+    kind: z.enum(["TEXT", "GIF"]).default("TEXT"),
+  })
+  .refine((m) => m.kind === "TEXT" || /^https:\/\/\S+$/i.test(m.text), {
+    message: "a gif transmission must be a single https url",
+    path: ["text"],
+  });
+export type ChatMessageInput = z.infer<typeof chatMessageInput>;
+
+// GIF ENGINE search — q absent means trending
+export const giphyQuery = z.object({
+  q: z.preprocess(emptyToUndef, z.string().trim().max(100).optional()),
+});
+
+// REMINDER SIREN: he arms them, the admin panel blares until she acknowledges.
+const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+export const reminderInput = z.object({
+  task: z.string().trim().min(1).max(200),
+  note: z.preprocess(emptyToUndef, z.string().trim().max(500).optional()),
+  dueAt: z.coerce
+    .date()
+    .refine((d) => !Number.isNaN(d.getTime()), { message: "unreadable timestamp" })
+    .refine((d) => d.getTime() < Date.now() + YEAR_MS, {
+      message: "the siren cannot be armed more than a year out",
+    }),
+});
+export type ReminderInput = z.infer<typeof reminderInput>;
+
+export const reminderAction = z.object({
+  action: z.enum(["ack", "delete"]),
 });
 
 export const vitalsAction = z

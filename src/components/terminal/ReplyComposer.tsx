@@ -2,28 +2,47 @@
 
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { GifBlock } from "@/components/Attachments";
+import { GifPicker } from "@/components/GifPicker";
 import { MISCHIEF_LEVELS, mischiefMeta } from "@/lib/mischief";
 
 /**
  * The recipient's uplink: a transmission plus a self-declared mischief rating,
  * so the owner knows how wild the message is before she dares to decrypt it.
+ * Transmissions can carry attachments: an AUDIO_REF (a song he wants her to
+ * hear) and/or a gif. A gif alone is a valid transmission; the attachments are
+ * sealed with the text until she decrypts.
  */
 export function ReplyComposer({ thoughtId }: { thoughtId: string | null }) {
   const [text, setText] = useState("");
   const [mischief, setMischief] = useState(1);
+  const [songUrl, setSongUrl] = useState("");
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
+  const canTransmit = (text.trim().length > 0 || gifUrl !== null) && !busy;
+
   async function transmit() {
-    if (!text.trim() || busy) return;
+    if (!canTransmit) return;
     setBusy(true);
     try {
       await api("/api/reply", {
         method: "POST",
-        body: JSON.stringify({ text: text.trim(), mischief, thoughtId }),
+        body: JSON.stringify({
+          text: text.trim(),
+          mischief,
+          thoughtId,
+          songUrl: songUrl.trim() || undefined,
+          gifUrl: gifUrl ?? undefined,
+        }),
       });
       setText("");
       setMischief(1);
+      setSongUrl("");
+      setGifUrl(null);
+      setPickerOpen(false);
       setNote("> transmitted. the brain felt that.");
     } catch (e) {
       setNote(`> ${e instanceof Error ? e.message : "transmission failed."}`);
@@ -49,6 +68,51 @@ export function ReplyComposer({ thoughtId }: { thoughtId: string | null }) {
         onChange={(e) => setText(e.target.value)}
         placeholder="type your transmission..."
       />
+
+      <div className="mt-3">
+        <label className="text-xs tracking-widest text-faint" htmlFor="uplink-audio-ref">
+          AUDIO_REF
+        </label>
+        <input
+          id="uplink-audio-ref"
+          className="field mt-1"
+          maxLength={500}
+          value={songUrl}
+          onChange={(e) => setSongUrl(e.target.value)}
+          placeholder="paste a song link she needs to hear (spotify / yt music / anything)..."
+        />
+      </div>
+
+      <div className="mt-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs tracking-widest text-faint">GIF PAYLOAD</span>
+          <button
+            type="button"
+            className="btn text-xs"
+            onClick={() => setPickerOpen((o) => !o)}
+            aria-expanded={pickerOpen}
+          >
+            {pickerOpen ? "close gif engine" : gifUrl ? "swap gif" : "attach gif"}
+          </button>
+        </div>
+        {gifUrl && (
+          <div>
+            <GifBlock url={gifUrl} />
+            <button type="button" className="btn btn-danger mt-1 text-xs" onClick={() => setGifUrl(null)}>
+              detach gif
+            </button>
+          </div>
+        )}
+        {pickerOpen && (
+          <GifPicker
+            onPick={(url) => {
+              setGifUrl(url);
+              setPickerOpen(false);
+            }}
+          />
+        )}
+      </div>
+
       <div className="mt-3">
         <MischiefMeter value={mischief} onChange={setMischief} />
       </div>
@@ -58,7 +122,7 @@ export function ReplyComposer({ thoughtId }: { thoughtId: string | null }) {
           type="button"
           className="btn btn-primary"
           onClick={transmit}
-          disabled={busy || !text.trim()}
+          disabled={!canTransmit}
         >
           {busy ? "transmitting..." : "transmit"}
         </button>

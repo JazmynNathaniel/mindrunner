@@ -3,6 +3,12 @@
 /* ---------------------------------------------------------------------------
    JAZ://BRAIN_OS design tokens
    dark base, neon as light escaping from the machine
+
+   THEMING: every decorative color below derives from these variables via
+   color-mix — no literal accent rgba() anywhere else — so a theme re-skins the
+   whole machine by overriding the variables (see THEMES at the bottom).
+   --color-siren is deliberately NOT themed: the reminder siren stays red and
+   severe in every skin.
 --------------------------------------------------------------------------- */
 
 @theme {
@@ -23,6 +29,9 @@
   --color-greendim: #37b077;
   --color-cyan: #5df3ff;
   --color-alert: #ff5c7a;
+
+  /* the one color no theme may soften */
+  --color-siren: #ff2e4d;
 }
 
 @theme inline {
@@ -41,8 +50,16 @@ html {
 body {
   /* the faintest phosphor breath in an otherwise dark room */
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(160, 107, 255, 0.03), transparent 60%),
-    radial-gradient(100% 80% at 50% 100%, rgba(255, 92, 214, 0.02), transparent 55%),
+    radial-gradient(
+      120% 90% at 50% 0%,
+      color-mix(in srgb, var(--color-violet) 3%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      100% 80% at 50% 100%,
+      color-mix(in srgb, var(--color-pink) 2%, transparent),
+      transparent 55%
+    ),
     var(--color-abyss);
   background-attachment: fixed;
 }
@@ -58,23 +75,39 @@ body {
 
 .glow-green {
   color: var(--color-green);
-  text-shadow: 0 0 6px rgba(82, 255, 158, 0.55), 0 0 24px rgba(82, 255, 158, 0.18);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-green) 55%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-green) 18%, transparent);
 }
 .glow-pink {
   color: var(--color-pink);
-  text-shadow: 0 0 6px rgba(255, 92, 214, 0.55), 0 0 24px rgba(255, 92, 214, 0.2);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-pink) 55%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-pink) 20%, transparent);
 }
 .glow-cyan {
   color: var(--color-cyan);
-  text-shadow: 0 0 6px rgba(93, 243, 255, 0.5), 0 0 22px rgba(93, 243, 255, 0.16);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-cyan) 50%, transparent),
+    0 0 22px color-mix(in srgb, var(--color-cyan) 16%, transparent);
 }
 .glow-violet {
   color: var(--color-violet);
-  text-shadow: 0 0 6px rgba(160, 107, 255, 0.55), 0 0 24px rgba(160, 107, 255, 0.2);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-violet) 55%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-violet) 20%, transparent);
 }
 .glow-lime {
   color: var(--color-lime);
-  text-shadow: 0 0 6px rgba(200, 255, 79, 0.45), 0 0 20px rgba(200, 255, 79, 0.14);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-lime) 45%, transparent),
+    0 0 20px color-mix(in srgb, var(--color-lime) 14%, transparent);
+}
+.glow-siren {
+  color: var(--color-siren);
+  text-shadow:
+    0 0 6px color-mix(in srgb, var(--color-siren) 60%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-siren) 25%, transparent);
 }
 
 /* --------------------------------------------------------------------------
@@ -86,14 +119,45 @@ body {
   border: 1px solid var(--color-grid);
   border-radius: 6px;
   box-shadow:
-    0 0 0 1px rgba(2, 1, 6, 0.95),
-    0 0 16px rgba(160, 107, 255, 0.035),
-    inset 0 0 48px rgba(2, 1, 6, 0.65);
+    0 0 0 1px color-mix(in srgb, var(--color-abyss) 95%, transparent),
+    0 0 16px color-mix(in srgb, var(--color-violet) 3.5%, transparent),
+    inset 0 0 48px color-mix(in srgb, var(--color-abyss) 65%, transparent);
 }
 
 .panel-title {
   font-family: var(--font-display);
   letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------------------
+   REMINDER SIREN — red and severe in every theme, by design
+-------------------------------------------------------------------------- */
+
+.panel-alarm {
+  border-color: var(--color-siren);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-siren) 35%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-siren) 22%, transparent),
+    inset 0 0 48px color-mix(in srgb, var(--color-siren) 8%, transparent);
+}
+
+.alarm-blink {
+  animation: alarm-blink 1.6s steps(2) infinite;
+}
+@keyframes alarm-blink {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-siren) 35%, transparent),
+      0 0 24px color-mix(in srgb, var(--color-siren) 22%, transparent),
+      inset 0 0 48px color-mix(in srgb, var(--color-siren) 8%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-siren) 70%, transparent),
+      0 0 42px color-mix(in srgb, var(--color-siren) 45%, transparent),
+      inset 0 0 64px color-mix(in srgb, var(--color-siren) 16%, transparent);
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -126,7 +190,11 @@ body {
   position: fixed;
   inset: 0;
   z-index: 41;
-  background: radial-gradient(115% 100% at 50% 50%, transparent 62%, rgba(2, 1, 6, 0.75) 100%);
+  background: radial-gradient(
+    115% 100% at 50% 50%,
+    transparent 62%,
+    color-mix(in srgb, var(--color-abyss) 75%, transparent) 100%
+  );
 }
 
 .flicker {
@@ -148,7 +216,7 @@ body {
   height: 1.1em;
   vertical-align: text-bottom;
   background: var(--color-green);
-  box-shadow: 0 0 8px rgba(82, 255, 158, 0.7);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-green) 70%, transparent);
   animation: blink 1.1s steps(1) infinite;
 }
 @keyframes blink {
@@ -209,7 +277,13 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255, 46, 166, 0.55), rgba(93, 243, 255, 0.5), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-magenta) 55%, transparent),
+    color-mix(in srgb, var(--color-cyan) 50%, transparent),
+    transparent
+  );
   animation: glitch-slide 0.6s steps(6) forwards;
 }
 @keyframes glitch-slide {
@@ -242,6 +316,7 @@ body {
   }
   .flicker,
   .cursor-blink,
+  .alarm-blink,
   .glitchable:hover {
     animation: none !important;
   }
@@ -284,10 +359,17 @@ body {
 .field:focus {
   outline: none;
   border-color: var(--color-violet);
-  box-shadow: 0 0 0 1px var(--color-violet), 0 0 14px rgba(160, 107, 255, 0.25);
+  box-shadow:
+    0 0 0 1px var(--color-violet),
+    0 0 14px color-mix(in srgb, var(--color-violet) 25%, transparent);
 }
 .field::placeholder {
   color: var(--color-faint);
+}
+/* the datetime picker glyph is near-invisible on dark; let the theme tint it */
+.field::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
 }
 
 .btn {
@@ -305,7 +387,7 @@ body {
 .btn:hover:not(:disabled) {
   color: var(--color-ink);
   border-color: var(--color-violet);
-  box-shadow: 0 0 12px rgba(160, 107, 255, 0.25);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-violet) 25%, transparent);
 }
 .btn:disabled {
   opacity: 0.45;
@@ -321,10 +403,107 @@ body {
   color: var(--color-abyss);
   background: var(--color-lime);
   border-color: var(--color-lime);
-  box-shadow: 0 0 16px rgba(200, 255, 79, 0.4);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-lime) 40%, transparent);
 }
 .btn-danger:hover:not(:disabled) {
   color: var(--color-alert);
   border-color: var(--color-alert);
-  box-shadow: 0 0 12px rgba(255, 92, 122, 0.3);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-alert) 30%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   THEMES — selected in /settings, applied as data-theme on <html> (stamped
+   pre-hydration by the inline script in layout.tsx). synth-rose is the @theme
+   default above and needs no block. html[data-theme] outranks :root, so these
+   override the generated variables cleanly. --color-siren is never overridden.
+-------------------------------------------------------------------------- */
+
+html[data-theme="ghost"] {
+  --color-abyss: #010401;
+  --color-panel: #020a04;
+  --color-panel2: #04120a;
+  --color-grid: #0e2b18;
+  --color-ink: #c9f7d4;
+  --color-dim: #6faf87;
+  --color-faint: #3c6b4c;
+  --color-pink: #7dffb0;
+  --color-magenta: #4dff8e;
+  --color-violet: #9fffc4;
+  --color-lime: #d8ffb0;
+  --color-green: #52ff9e;
+  --color-greendim: #37b077;
+  --color-cyan: #b4ffd9;
+  --color-alert: #ffd24d;
+}
+
+html[data-theme="ember"] {
+  --color-abyss: #060301;
+  --color-panel: #0c0603;
+  --color-panel2: #140a04;
+  --color-grid: #33200e;
+  --color-ink: #ffd9a8;
+  --color-dim: #b08454;
+  --color-faint: #6b4c2e;
+  --color-pink: #ffb054;
+  --color-magenta: #ff9e2e;
+  --color-violet: #ffc06b;
+  --color-lime: #ffe14f;
+  --color-green: #ffcf52;
+  --color-greendim: #b08737;
+  --color-cyan: #ffe9b4;
+  --color-alert: #ff5c3c;
+}
+
+html[data-theme="ice"] {
+  --color-abyss: #020308;
+  --color-panel: #04070e;
+  --color-panel2: #070c18;
+  --color-grid: #112034;
+  --color-ink: #d5e8f2;
+  --color-dim: #7891ad;
+  --color-faint: #435773;
+  --color-pink: #5cb8ff;
+  --color-magenta: #2e8cff;
+  --color-violet: #6b8cff;
+  --color-lime: #4fffd5;
+  --color-green: #52ffe0;
+  --color-greendim: #37b0a0;
+  --color-cyan: #5df3ff;
+  --color-alert: #ff5c7a;
+}
+
+html[data-theme="bloodline"] {
+  --color-abyss: #070202;
+  --color-panel: #0e0404;
+  --color-panel2: #180707;
+  --color-grid: #341114;
+  --color-ink: #f2d5d9;
+  --color-dim: #ad7880;
+  --color-faint: #734349;
+  --color-pink: #ff5c6b;
+  --color-magenta: #ff2e46;
+  --color-violet: #ff6b9e;
+  --color-lime: #ffb44f;
+  --color-green: #ff7a52;
+  --color-greendim: #b05537;
+  --color-cyan: #ff9eb4;
+  --color-alert: #ffe066;
+}
+
+html[data-theme="vaporwave"] {
+  --color-abyss: #030407;
+  --color-panel: #060812;
+  --color-panel2: #0a0d1d;
+  --color-grid: #1d2440;
+  --color-ink: #e2ddf2;
+  --color-dim: #8a84ad;
+  --color-faint: #4f4a73;
+  --color-pink: #ff8ad8;
+  --color-magenta: #ff5cbf;
+  --color-violet: #b48aff;
+  --color-lime: #8affd8;
+  --color-green: #5cffc4;
+  --color-greendim: #3bb08a;
+  --color-cyan: #7ae4ff;
+  --color-alert: #ff7a8a;
 }

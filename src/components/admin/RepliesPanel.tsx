@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GifBlock, SongLinkCard } from "@/components/Attachments";
 import { ChatThread } from "@/components/ChatThread";
 import { FoldToggle } from "@/components/FoldToggle";
 import { api } from "@/lib/api";
@@ -73,23 +74,33 @@ function ReplyItem({
       {r.thoughtExcerpt && (
         <p className="mt-2 text-xs text-faint">re: &quot;{r.thoughtExcerpt}&quot;</p>
       )}
-      {r.text !== null ? (
-        <p className="mt-2 whitespace-pre-wrap text-ink">{r.text}</p>
+      {r.seenAt !== null ? (
+        <>
+          {r.text && <p className="mt-2 whitespace-pre-wrap text-ink">{r.text}</p>}
+          {r.songUrl && <SongLinkCard url={r.songUrl} />}
+          {r.gifUrl && <GifBlock url={r.gifUrl} />}
+        </>
       ) : (
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <span className="text-dim" aria-hidden="true">
             ▓▓▓▓▓▓▓▓▓▓▓▓▓▓ [ encrypted ]
           </span>
+          {(r.hasSong || r.hasGif) && (
+            <span className="text-xs text-faint">
+              [ sealed:{r.hasSong ? " audio_ref" : ""}
+              {r.hasGif ? " gif" : ""} ]
+            </span>
+          )}
           <button type="button" className="btn text-xs" onClick={() => act(r.id, "decrypt")}>
             decrypt
           </button>
         </div>
       )}
 
-      {r.text !== null && channelOpen && <ChatThread channelId={r.id} viewer="OWNER" />}
+      {r.seenAt !== null && channelOpen && <ChatThread channelId={r.id} viewer="OWNER" />}
 
       <div className="mt-2 flex flex-wrap justify-end gap-2">
-        {r.text !== null && (
+        {r.seenAt !== null && (
           <button type="button" className="btn text-xs" onClick={() => setChannelOpen((o) => !o)}>
             {channelOpen
               ? "close channel"

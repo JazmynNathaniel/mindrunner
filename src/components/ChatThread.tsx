@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { GifBlock, LinkifiedText } from "@/components/Attachments";
+import { GifPicker } from "@/components/GifPicker";
 import type { ChatMessageDTO } from "@/lib/types";
 
 // gentle refresh while a channel is open — enough for a two-person wire
@@ -23,6 +25,7 @@ export function ChatThread({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [gifOpen, setGifOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -43,17 +46,17 @@ export function ChatThread({
     return () => clearInterval(t);
   }, [load]);
 
-  async function send() {
-    const text = draft.trim();
+  async function send(text: string, kind: ChatMessageDTO["kind"] = "TEXT") {
     if (!text || busy) return;
     setBusy(true);
     try {
       const res = await api<{ messages: ChatMessageDTO[] }>(`/api/chat/${channelId}`, {
         method: "POST",
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, kind }),
       });
       setMessages(res.messages);
-      setDraft("");
+      if (kind === "TEXT") setDraft("");
+      else setGifOpen(false);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "transmission failed.");
@@ -82,7 +85,13 @@ export function ChatThread({
                   {label(m.sender)}
                 </span>
               </span>
-              <p className="whitespace-pre-wrap pl-3 text-ink">{m.text}</p>
+              {m.kind === "GIF" ? (
+                <div className="pl-3">
+                  <GifBlock url={m.text} />
+                </div>
+              ) : (
+                <LinkifiedText text={m.text} className="pl-3 text-ink" />
+              )}
             </li>
           ))}
         </ul>
@@ -102,10 +111,24 @@ export function ChatThread({
           placeholder="transmit on this channel..."
           aria-label="chat message"
         />
-        <button type="button" className="btn text-xs" disabled={busy || !draft.trim()} onClick={send}>
+        <button
+          type="button"
+          className="btn text-xs"
+          onClick={() => setGifOpen((o) => !o)}
+          aria-expanded={gifOpen}
+        >
+          gif
+        </button>
+        <button
+          type="button"
+          className="btn text-xs"
+          disabled={busy || !draft.trim()}
+          onClick={() => void send(draft.trim())}
+        >
           {busy ? "sending..." : "send"}
         </button>
       </div>
+      {gifOpen && <GifPicker disabled={busy} onPick={(url) => void send(url, "GIF")} />}
     </div>
   );
 }

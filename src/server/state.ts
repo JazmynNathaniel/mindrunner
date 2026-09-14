@@ -8,17 +8,19 @@ import { pickSnark } from "./snark";
 import { getRecipientStats, recordVisit } from "./stats";
 import { countArchive, toRecipientDTO } from "./thoughts";
 import { getOperatorVitals } from "./vitals";
-import type { BrainState } from "@/lib/types";
+import type { BrainState, SystemViewDTO } from "@/lib/types";
+
+const CAT_PROCESSES = ["KEVIN", "JOJO"];
 
 /**
  * The single recipient-facing read. Runs the lazy scheduler tick first, so
  * state is always current even with zero cron infrastructure, then returns
  * only what the recipient is allowed to know:
  *   - the current PUBLISHED thought (or which idle flavor applies)
- *   - now playing
- *   - decorative system status (never real infrastructure info)
- *   - his own stats
+ *   - now playing, vitals, open comms channels
  * Never: unpublished thoughts, scheduling times, admin data.
+ * Diagnostics and brain-access stats moved to getSystemView (/api/system),
+ * which is side-effect free so the settings pages never inflate his CHECKS.
  */
 export async function getBrainState(user: User, sessionId: string): Promise<BrainState> {
   await tick();
@@ -27,15 +29,13 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
   let prevVisitAt: Date | null = null;
   if (isRecipient) prevVisitAt = await recordVisit(user.id, sessionId);
 
-  const [published, scheduledCount, archiveCount, channels, nowPlaying, stats, diagnostics, vitals] =
+  const [published, scheduledCount, archiveCount, channels, nowPlaying, vitals] =
     await Promise.all([
       prisma.thought.findFirst({ where: { status: "PUBLISHED" }, include: { song: true } }),
       prisma.thought.count({ where: { status: "SCHEDULED" } }),
       countArchive(),
       listChannels(),
       musicService.getNowPlaying(),
-      getRecipientStats(isRecipient ? user.id : (await recipientUserId()) ?? user.id),
-      getDiagnostics(),
       getOperatorVitals(),
     ]);
 
@@ -62,11 +62,27 @@ export async function getBrainState(user: User, sessionId: string): Promise<Brai
     channels,
     nowPlaying,
     vitals,
+  };
+}
+
+/**
+ * The settings-pages read (SYSTEM DIAGNOSTICS / BRAIN ACCESS). Deliberately
+ * side-effect free: no visit recording, no seenAt stamping, no snark — looking
+ * at the gauges is not "checking the brain".
+ */
+export async function getSystemView(user: User): Promise<SystemViewDTO> {
+  const isRecipient = user.role === "RECIPIENT";
+  const statsUserId = isRecipient ? user.id : ((await recipientUserId()) ?? user.id);
+  const [stats, diagnostics] = await Promise.all([
+    getRecipientStats(statsUserId),
+    getDiagnostics(),
+  ]);
+  return {
     system: {
       // decorative flavor only — never real infrastructure data (spec §11/§17);
       // the vitals are owner-authored fiction from the Diagnostics singleton
       flora: diagnostics.flora,
-      catProcesses: ["KEVIN", "JOJO"],
+      catProcesses: CAT_PROCESSES,
       thoughtsServed: stats.thoughtsServed,
       diagnostics,
     },

@@ -121,13 +121,6 @@ export type BrainState = {
   channels: ChannelDTO[];
   nowPlaying: NowPlayingDTO | null;
   vitals: OperatorVitalsDTO;
-  system: {
-    flora: string;
-    catProcesses: string[];
-    thoughtsServed: number;
-    diagnostics: DiagnosticsDTO;
-  };
-  stats: RecipientStats;
 };
 
 export type AdminThoughtDTO = {
@@ -156,16 +149,23 @@ export type AdminReplyDTO = {
   mischief: number;
   createdAt: string;
   seenAt: string | null;
+  /** sealed-attachment teasers: visible before decrypt, like the mischief meter */
+  hasSong: boolean;
+  hasGif: boolean;
+  /** attachment payloads: null until decrypted */
+  songUrl: string | null;
+  gifUrl: string | null;
   /** chat messages in this transmission's channel (0 = never answered) */
   messageCount: number;
   /** what he was replying to, if it still exists */
   thoughtExcerpt: string | null;
 };
 
-/** One message inside a comms channel. */
+/** One message inside a comms channel. GIF: `text` holds the https url. */
 export type ChatMessageDTO = {
   id: string;
   sender: "OWNER" | "RECIPIENT";
+  kind: "TEXT" | "GIF";
   text: string;
   at: string;
 };
@@ -179,13 +179,53 @@ export type ChannelDTO = {
   id: string;
   /** what the opening transmission replied to, if anything (the room's topic) */
   topic: string | null;
-  /** his opening transmission — the room's reason to exist */
+  /** his opening transmission — the room's reason to exist ("" = attachment-only) */
   rootText: string;
+  /** attachments riding on the opening transmission */
+  songUrl: string | null;
+  gifUrl: string | null;
   mischief: number;
   openedAt: string;
   lastAt: string;
   lastFrom: "OWNER" | "RECIPIENT";
   messageCount: number;
+};
+
+/** One GIF ENGINE search result (server-proxied Giphy). */
+export type GifDTO = {
+  id: string;
+  title: string;
+  /** small animated preview for the picker grid */
+  previewUrl: string;
+  /** full-size url — what actually gets sent */
+  url: string;
+};
+
+/**
+ * One armed reminder. The siren blares (on both terminals) while a reminder is
+ * past due and unacknowledged; only the owner can acknowledge.
+ */
+export type ReminderDTO = {
+  id: string;
+  task: string;
+  note: string | null;
+  /** when the siren starts blaring */
+  dueAt: string;
+  createdAt: string;
+  createdBy: "OWNER" | "RECIPIENT";
+  /** when the owner acknowledged it (null = still armed) */
+  ackAt: string | null;
+};
+
+/** The /api/system view: diagnostics + brain-access stats, side-effect free. */
+export type SystemViewDTO = {
+  system: {
+    flora: string;
+    catProcesses: string[];
+    thoughtsServed: number;
+    diagnostics: DiagnosticsDTO;
+  };
+  stats: RecipientStats;
 };
 
 export type SettingsDTO = {
