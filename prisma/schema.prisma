@@ -169,6 +169,32 @@ model Reminder {
   @@index([ackAt, dueAt])
 }
 
+// DECLASSIFIED INTEL: fun facts neither side would tell the general public.
+// One shared feed; both accounts post and read the same file.
+model FunFact {
+  id        String   @id @default(uuid())
+  text      String
+  sender    String // "OWNER" | "RECIPIENT" (validated string, engine-portable)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// Singleton (id = 1): HIM://STATUS — the recipient's self-reported telemetry,
+// his mirror of the owner's mood/doing/location context. `cravingAt` is the
+// HONEY CHICKEN PROTOCOL: only he arms it, either side clears it when fed,
+// and the first declaration's timestamp is kept so the panel can report
+// exactly how long the node has gone unfueled.
+model RecipientStatus {
+  id          Int       @id @default(1)
+  mood        String?
+  doing       String?
+  location    String?
+  note        String?
+  telemetryAt DateTime? // when he last updated the fields above
+  cravingAt   DateTime? // honey chicken protocol armed (null = fed / standby)
+}
+
 // Singleton (id = 1): owner-configurable scheduler settings.
 // Intervals are minutes. lifetimeMin = 0 means "visible until the next thought replaces it".
 model Settings {

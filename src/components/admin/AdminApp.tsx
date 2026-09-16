@@ -13,6 +13,8 @@ import type {
   SettingsDTO,
   SongDTO,
 } from "@/lib/types";
+import { FactsPanel } from "@/components/FactsPanel";
+import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
@@ -141,8 +143,10 @@ export function AdminApp() {
         </div>
 
         <div className="flex flex-col gap-4 lg:col-span-2">
+          <NodeStatusPanel role="OWNER" />
           {settings && <SettingsPanel settings={settings} run={run} />}
           <OperatorCareForm operator={operator} run={run} />
+          <FactsPanel role="OWNER" />
           <NowPlayingForm nowPlaying={nowPlaying} run={run} />
           {diagnostics && <VitalsForm initial={diagnostics} run={run} />}
           <StatsView stats={stats.stats} recipientUsername={stats.recipientUsername} />

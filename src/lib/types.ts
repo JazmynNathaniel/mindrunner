@@ -201,6 +201,36 @@ export type GifDTO = {
   url: string;
 };
 
+/** One DECLASSIFIED INTEL record: a fun fact not cleared for public release. */
+export type FunFactDTO = {
+  id: string;
+  text: string;
+  sender: "OWNER" | "RECIPIENT";
+  at: string;
+};
+
+/** The intel feed: latest facts plus the size of the whole file. */
+export type FactsPageDTO = {
+  facts: FunFactDTO[];
+  total: number;
+};
+
+/**
+ * HIM://STATUS — the recipient's self-reported telemetry, his mirror of the
+ * owner's mood/doing/location context. `cravingAt` is the honey chicken
+ * protocol: non-null means a fuel request is active.
+ */
+export type NodeStatusDTO = {
+  mood: string | null;
+  doing: string | null;
+  location: string | null;
+  note: string | null;
+  /** when he last updated the fields above (null = the node has never reported) */
+  telemetryAt: string | null;
+  /** when he declared the craving (null = fed / standby) */
+  cravingAt: string | null;
+};
+
 /**
  * One armed reminder. The siren blares (on both terminals) while a reminder is
  * past due and unacknowledged; only the owner can acknowledge.

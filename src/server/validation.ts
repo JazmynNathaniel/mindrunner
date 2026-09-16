@@ -177,6 +177,24 @@ export const reminderAction = z.object({
   action: z.enum(["ack", "delete"]),
 });
 
+// DECLASSIFIED INTEL: one fun fact, not cleared for public release.
+export const factInput = z.object({
+  text: z.string().trim().min(1).max(500),
+});
+export type FactInput = z.infer<typeof factInput>;
+
+// HIM://STATUS: telemetry fields ride along only on action "telemetry".
+// An omitted/empty field CLEARS its value (he transmits the whole form each
+// time); limits mirror the owner's thought context (mood/doing/location).
+export const nodeAction = z.object({
+  action: z.enum(["telemetry", "crave", "fed"]),
+  mood: z.preprocess(emptyToUndef, z.string().trim().max(60).optional()),
+  doing: z.preprocess(emptyToUndef, z.string().trim().max(120).optional()),
+  location: z.preprocess(emptyToUndef, z.string().trim().max(120).optional()),
+  note: z.preprocess(emptyToUndef, z.string().trim().max(240).optional()),
+});
+export type NodeAction = z.infer<typeof nodeAction>;
+
 export const vitalsAction = z
   .object({
     action: z.enum(["coolant", "uncoolant", "packet"]),
