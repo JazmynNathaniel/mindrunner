@@ -18,16 +18,16 @@ type Tx = Prisma.TransactionClient;
 //
 // The exact scheduledFor time is never exposed through any recipient API.
 //
-// CHAOS CLOCK (owner directive 2026-09-13): publication gaps are completely
-// randomized. The draw is log-uniform between 15 minutes and 72 hours, so
-// rapid double-taps and multi-day droughts are both genuinely on the table
-// (median ≈ 4h; a uniform draw would almost never produce short gaps).
+// CHAOS CLOCK (owner directive 2026-09-13; ceiling lowered 2026-09-16 — 72h
+// max was "insanity", he checks constantly): publication gaps are randomized
+// log-uniform between 15 minutes and 8 hours, so rapid double-taps stay
+// genuinely on the table (median ≈ 1.4h) but no multi-day droughts.
 // Settings.minIntervalMin/maxIntervalMin are retired from scheduling — the
 // columns remain but nothing reads them. Lifetime + selection mode still apply.
 // ---------------------------------------------------------------------------
 
 const CHAOS_MIN_MS = 15 * 60_000;
-const CHAOS_MAX_MS = 72 * 60 * 60_000;
+const CHAOS_MAX_MS = 8 * 60 * 60_000;
 
 function chaosIntervalMs() {
   const lo = Math.log(CHAOS_MIN_MS);
