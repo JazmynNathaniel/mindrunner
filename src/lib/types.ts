@@ -201,20 +201,6 @@ export type GifDTO = {
   url: string;
 };
 
-/** One DECLASSIFIED INTEL record: a fun fact not cleared for public release. */
-export type FunFactDTO = {
-  id: string;
-  text: string;
-  sender: "OWNER" | "RECIPIENT";
-  at: string;
-};
-
-/** The intel feed: latest facts plus the size of the whole file. */
-export type FactsPageDTO = {
-  facts: FunFactDTO[];
-  total: number;
-};
-
 /**
  * HIM://STATUS — the recipient's self-reported telemetry, his mirror of the
  * owner's mood/doing/location context. `cravingAt` is the honey chicken

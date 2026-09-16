@@ -7,7 +7,6 @@ import { api } from "@/lib/api";
 import { getBooted, getBootedServer, setBooted, subscribeBooted } from "@/lib/bootFlag";
 import { usePrefs, type PanelKey } from "@/lib/prefs";
 import type { BrainState } from "@/lib/types";
-import { FactsPanel } from "@/components/FactsPanel";
 import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
 import { ArchivePanel } from "./ArchivePanel";
@@ -134,7 +133,6 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
     siren: <SirenPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
     uplink: state ? <ReplyComposer thoughtId={state.thought?.id ?? null} /> : null,
     comms: state ? <CommsPanel channels={state.channels} isAdmin={isAdmin} /> : null,
-    facts: <FactsPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
     archive: state ? <ArchivePanel archiveCount={state.archiveCount} /> : null,
     "now-playing": state?.nowPlaying ? (
       <NowPlayingPanel

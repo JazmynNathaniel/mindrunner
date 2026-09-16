@@ -177,12 +177,6 @@ export const reminderAction = z.object({
   action: z.enum(["ack", "delete"]),
 });
 
-// DECLASSIFIED INTEL: one fun fact, not cleared for public release.
-export const factInput = z.object({
-  text: z.string().trim().min(1).max(500),
-});
-export type FactInput = z.infer<typeof factInput>;
-
 // HIM://STATUS: telemetry fields ride along only on action "telemetry".
 // An omitted/empty field CLEARS its value (he transmits the whole form each
 // time); limits mirror the owner's thought context (mood/doing/location).

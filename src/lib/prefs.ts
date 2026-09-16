@@ -57,7 +57,6 @@ export const PANELS = [
   { key: "siren", label: "REMINDER SIREN", locked: false, note: "armed reminders. blares when due." },
   { key: "uplink", label: "UPLINK :: REPLY", locked: false, note: "transmissions back to the brain." },
   { key: "comms", label: "COMMS", locked: false, note: "open chat channels." },
-  { key: "facts", label: "DECLASSIFIED INTEL", locked: false, note: "fun facts not cleared for public release." },
   { key: "archive", label: "MEMORY BANKS", locked: false, note: "every thought ever aired." },
   { key: "now-playing", label: "NOW PLAYING", locked: false, note: "what jaz is listening to." },
   { key: "vitals", label: "OPERATOR VITALS", locked: false, note: "coolant and payload intake." },
