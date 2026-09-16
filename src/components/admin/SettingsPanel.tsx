@@ -13,6 +13,8 @@ export function SettingsPanel({
   settings: SettingsDTO;
   run: (fn: () => Promise<unknown>) => Promise<boolean>;
 }) {
+  const [minH, setMinH] = useState(String(toHours(settings.minIntervalMin)));
+  const [maxH, setMaxH] = useState(String(toHours(settings.maxIntervalMin)));
   const [lifeH, setLifeH] = useState(String(toHours(settings.lifetimeMin)));
   const [mode, setMode] = useState(settings.selectionMode);
   const [saved, setSaved] = useState(false);
@@ -22,10 +24,8 @@ export function SettingsPanel({
       api("/api/admin/settings", {
         method: "PUT",
         body: JSON.stringify({
-          // interval bounds are retired from scheduling (chaos clock decides);
-          // stored values pass through untouched to keep the API contract whole
-          minIntervalMin: settings.minIntervalMin,
-          maxIntervalMin: settings.maxIntervalMin,
+          minIntervalMin: Math.max(1, Math.round(parseFloat(minH || "0") * 60)),
+          maxIntervalMin: Math.max(1, Math.round(parseFloat(maxH || "0") * 60)),
           lifetimeMin: Math.max(0, Math.round(parseFloat(lifeH || "0") * 60)),
           selectionMode: mode,
         }),
@@ -43,10 +43,37 @@ export function SettingsPanel({
         SCHEDULER
       </h2>
       <div className="mt-3 space-y-3 text-sm">
-        <p className="rounded border border-grid p-3 text-xs text-dim">
-          PUBLISH INTERVAL :: <span className="glow-lime">fully randomized</span> — 15 minutes
-          to 72 hours, drawn by the machine. it does not negotiate.
-        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="min-interval" className="mb-1 block text-xs tracking-widest text-faint">
+              MIN GAP (hours)
+            </label>
+            <input
+              id="min-interval"
+              className="field"
+              type="number"
+              min="0.02"
+              step="0.5"
+              value={minH}
+              onChange={(e) => setMinH(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="max-interval" className="mb-1 block text-xs tracking-widest text-faint">
+              MAX GAP (hours)
+            </label>
+            <input
+              id="max-interval"
+              className="field"
+              type="number"
+              min="0.02"
+              step="0.5"
+              value={maxH}
+              onChange={(e) => setMaxH(e.target.value)}
+            />
+          </div>
+        </div>
+        <p className="text-xs text-faint">gap is drawn between the bounds. min = max = exact cadence.</p>
         <div>
           <label htmlFor="lifetime" className="mb-1 block text-xs tracking-widest text-faint">
             THOUGHT LIFETIME (hours, 0 = until replaced)

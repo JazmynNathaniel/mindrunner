@@ -12,27 +12,21 @@ type Tx = Prisma.TransactionClient;
 //
 // At most one thought is SCHEDULED at a time; its `scheduledFor` IS the
 // server-side next_publish_at. When a thought publishes, the next queued
-// thought is immediately promoted to SCHEDULED at now + a chaos interval.
+// thought is immediately promoted to SCHEDULED at now + random(min, max).
 // If the queue is empty at that moment, nothing is scheduled; the first
 // thought queued later gets a fresh randomized time from *then* (spec §7).
 //
 // The exact scheduledFor time is never exposed through any recipient API.
 //
-// CHAOS CLOCK (owner directive 2026-09-13; ceiling lowered 2026-09-16 — 72h
-// max was "insanity", he checks constantly): publication gaps are randomized
-// log-uniform between 15 minutes and 8 hours, so rapid double-taps stay
-// genuinely on the table (median ≈ 1.4h) but no multi-day droughts.
-// Settings.minIntervalMin/maxIntervalMin are retired from scheduling — the
-// columns remain but nothing reads them. Lifetime + selection mode still apply.
+// CHAOS CLOCK RETIRED (owner directive 2026-09-16): the interval is back
+// under the owner's Settings min/max bounds (uniform draw between them;
+// min = max gives an exact cadence). Selection mode still allows RANDOM —
+// chaos survives in WHICH thought airs, never in WHEN.
 // ---------------------------------------------------------------------------
 
-const CHAOS_MIN_MS = 15 * 60_000;
-const CHAOS_MAX_MS = 8 * 60 * 60_000;
-
-function chaosIntervalMs() {
-  const lo = Math.log(CHAOS_MIN_MS);
-  const hi = Math.log(CHAOS_MAX_MS);
-  return Math.round(Math.exp(lo + Math.random() * (hi - lo)));
+function randomIntervalMs(minMin: number, maxMin: number) {
+  const span = Math.max(0, maxMin - minMin);
+  return Math.round((minMin + Math.random() * span) * 60_000);
 }
 
 async function pickNextQueued(tx: Tx, selectionMode: string): Promise<Thought | null> {
@@ -56,7 +50,9 @@ export async function ensureScheduled(tx: Tx, now: Date, inheritSlot?: Date | nu
   const settings = await getSettings(tx);
   const next = await pickNextQueued(tx, settings.selectionMode);
   if (!next) return null;
-  const when = inheritSlot ?? new Date(now.getTime() + chaosIntervalMs());
+  const when =
+    inheritSlot ??
+    new Date(now.getTime() + randomIntervalMs(settings.minIntervalMin, settings.maxIntervalMin));
   return tx.thought.update({
     where: { id: next.id },
     data: { status: "SCHEDULED", scheduledFor: when },
