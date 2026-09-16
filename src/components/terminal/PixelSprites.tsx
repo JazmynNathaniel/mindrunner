@@ -145,3 +145,82 @@ export function PixelCat({
   );
 }
 
+// The one payload the node actually wants. Canonical food colors, hard-coded
+// like the cats' coats — honey chicken stays amber in every theme.
+const PLATE_PAL = {
+  steam: "#9a93bb",
+  rice: "#f2e7c4",
+  egg: "#ffd24d",
+  veg: "#4fae52",
+  carrot: "#ff8c42",
+  glaze: "#b3550f",
+  glazeHi: "#ff9e3d",
+  glazeDark: "#6e3608",
+  sesame: "#ffefd2",
+  rim: "#eae7f5",
+  plate: "#cfcae6",
+  foot: "#8d87ad",
+};
+
+/** Pixel plate of chinese honey chicken + fried rice, 14x10 grid. */
+export function PixelPlate({ size = 40, className }: { size?: number; className?: string }) {
+  const cells: React.ReactNode[] = [];
+  // key by paint order, not coordinate: scatter/shine pixels overpaint base
+  // pixels at the same (x,y), and duplicate keys make React drop children
+  const put = (x: number, y: number, fill: string) =>
+    cells.push(px(x, y, fill, `${cells.length}:${x},${y}`));
+
+  // steam rising off both mounds
+  for (const [x, y] of [
+    [4, 0],
+    [3, 1],
+    [9, 0],
+    [10, 1],
+  ]) {
+    put(x, y, PLATE_PAL.steam);
+  }
+  // fried rice mound (left)
+  for (let x = 3; x <= 4; x++) put(x, 3, PLATE_PAL.rice);
+  for (let x = 2; x <= 5; x++) put(x, 4, PLATE_PAL.rice);
+  for (let x = 1; x <= 6; x++) put(x, 5, PLATE_PAL.rice);
+  for (let x = 1; x <= 6; x++) put(x, 6, PLATE_PAL.rice);
+  // egg / scallion / carrot scattered through the rice
+  put(3, 4, PLATE_PAL.egg);
+  put(5, 5, PLATE_PAL.egg);
+  put(2, 5, PLATE_PAL.veg);
+  put(4, 6, PLATE_PAL.veg);
+  put(3, 6, PLATE_PAL.carrot);
+  // honey chicken chunks (right), glazed
+  for (let x = 9; x <= 10; x++) put(x, 3, PLATE_PAL.glaze);
+  for (let x = 8; x <= 11; x++) put(x, 4, PLATE_PAL.glaze);
+  for (let x = 7; x <= 12; x++) put(x, 5, PLATE_PAL.glaze);
+  for (let x = 7; x <= 12; x++) put(x, 6, PLATE_PAL.glaze);
+  // crevices between chunks, then honey shine, then sesame on top
+  put(9, 5, PLATE_PAL.glazeDark);
+  put(8, 6, PLATE_PAL.glazeDark);
+  put(11, 6, PLATE_PAL.glazeDark);
+  put(9, 3, PLATE_PAL.glazeHi);
+  put(8, 4, PLATE_PAL.glazeHi);
+  put(10, 5, PLATE_PAL.glazeHi);
+  put(12, 5, PLATE_PAL.glazeHi);
+  put(10, 4, PLATE_PAL.sesame);
+  put(8, 5, PLATE_PAL.sesame);
+  // the plate: rim, body, foot
+  for (let x = 0; x <= 13; x++) put(x, 7, PLATE_PAL.rim);
+  for (let x = 1; x <= 12; x++) put(x, 8, PLATE_PAL.plate);
+  for (let x = 4; x <= 9; x++) put(x, 9, PLATE_PAL.foot);
+
+  return (
+    <svg
+      viewBox="0 0 14 10"
+      width={size}
+      height={(size * 10) / 14}
+      className={className}
+      aria-hidden="true"
+      style={{ shapeRendering: "crispEdges" }}
+    >
+      {cells}
+    </svg>
+  );
+}
+

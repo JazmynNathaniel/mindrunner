@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { PlateRain } from "@/components/PlateRain";
 import type { NodeStatusDTO } from "@/lib/types";
 
 const POLL_MS = 60_000;
@@ -27,6 +28,8 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
   const [node, setNode] = useState<NodeStatusDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // each successful protocol press replays the plate downpour
+  const [burst, setBurst] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -91,10 +94,10 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
             FEELING :: {node.mood ? <span className="glow-cyan">{node.mood}</span> : <span className="text-faint">no signal</span>}
           </p>
           <p>
-            DOING :: {node.doing ? <span className="text-ink">{node.doing}</span> : <span className="text-faint">unknown</span>}
+            DOING :: {node.doing ? <span className="text-ink">{node.doing}</span> : <span className="text-faint">unreported</span>}
           </p>
           <p>
-            LOCATION :: {node.location ? <span className="text-ink">{node.location}</span> : <span className="text-faint">untracked</span>}
+            LOCATION :: {node.location ? <span className="text-ink">{node.location}</span> : <span className="text-faint">only the node knows</span>}
           </p>
           {node.note && (
             <p className="whitespace-pre-wrap">
@@ -142,7 +145,11 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
               type="button"
               className="btn text-xs"
               disabled={busy}
-              onClick={() => void act({ action: "crave" })}
+              onClick={() =>
+                void act({ action: "crave" }).then((ok) => {
+                  if (ok) setBurst((b) => b + 1);
+                })
+              }
             >
               initiate honey chicken protocol
             </button>
@@ -156,6 +163,8 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
           &gt; {error}
         </p>
       )}
+
+      <PlateRain burst={burst} />
     </section>
   );
 }

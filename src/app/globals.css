@@ -292,6 +292,29 @@ body {
   100% { transform: translateX(-3%) scaleY(1); opacity: 0; }
 }
 
+/* HONEY CHICKEN PROTOCOL: plates rain the full height of the viewport. The
+   resting position (before animation-delay elapses) parks the plate above the
+   screen; `forwards` holds it below when the fall ends — never visible except
+   mid-fall. Two variants so neighboring plates tumble opposite ways. */
+.plate-fall-a,
+.plate-fall-b {
+  top: -12vh;
+}
+.plate-fall-a {
+  animation: plate-fall-a linear forwards;
+}
+.plate-fall-b {
+  animation: plate-fall-b linear forwards;
+}
+@keyframes plate-fall-a {
+  from { transform: translateY(0) rotate(-9deg); }
+  to { transform: translateY(124vh) rotate(11deg); }
+}
+@keyframes plate-fall-b {
+  from { transform: translateY(0) rotate(10deg); }
+  to { transform: translateY(124vh) rotate(-12deg); }
+}
+
 /* old CRT power-off: the picture collapses to a bright horizontal line, then
    a dot, then nothing. `forwards` holds the dead screen until navigation. */
 .crt-off {
