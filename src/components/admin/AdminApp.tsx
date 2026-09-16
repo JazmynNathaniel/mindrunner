@@ -15,6 +15,7 @@ import type {
 } from "@/lib/types";
 import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
+import { VaultPanel } from "@/components/VaultPanel";
 import { Composer } from "./Composer";
 import { NowPlayingForm } from "./NowPlayingForm";
 import { OperatorCareForm } from "./OperatorCareForm";
@@ -142,6 +143,7 @@ export function AdminApp() {
         </div>
 
         <div className="flex flex-col gap-4 lg:col-span-2">
+          <VaultPanel role="OWNER" drafts={thoughts.filter((t) => t.status === "DRAFT")} />
           <NodeStatusPanel role="OWNER" />
           {settings && <SettingsPanel settings={settings} run={run} />}
           <OperatorCareForm operator={operator} run={run} />

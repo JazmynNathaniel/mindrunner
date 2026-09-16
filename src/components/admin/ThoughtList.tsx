@@ -9,7 +9,7 @@ const GROUPS: { status: string; title: string; accent: string; defaultOpen: bool
   { status: "PUBLISHED", title: "LIVE ON HIS SCREEN", accent: "glow-pink", defaultOpen: true },
   { status: "SCHEDULED", title: "SCHEDULED (the machine has chosen)", accent: "glow-cyan", defaultOpen: true },
   { status: "QUEUED", title: "QUEUE", accent: "glow-green", defaultOpen: true },
-  { status: "DRAFT", title: "DRAFTS", accent: "glow-violet", defaultOpen: false },
+  { status: "DRAFT", title: "PRIVATE JOURNAL (drafts — he sees only the count)", accent: "glow-violet", defaultOpen: false },
   { status: "EXPIRED", title: "HISTORY", accent: "text-dim", defaultOpen: false },
   { status: "ARCHIVED", title: "ARCHIVE", accent: "text-faint", defaultOpen: false },
 ];

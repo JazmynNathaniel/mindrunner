@@ -177,6 +177,18 @@ export const reminderAction = z.object({
   action: z.enum(["ack", "delete"]),
 });
 
+// JAZ://VAULT: resolving a petition. An approval must name the entry to unseal.
+export const vaultResolve = z
+  .object({
+    action: z.enum(["approve", "deny"]),
+    thoughtId: z.string().uuid().optional(),
+  })
+  .refine((v) => v.action !== "approve" || !!v.thoughtId, {
+    message: "an approval must name the entry to unseal",
+    path: ["thoughtId"],
+  });
+export type VaultResolve = z.infer<typeof vaultResolve>;
+
 // HIM://STATUS: telemetry fields ride along only on action "telemetry".
 // An omitted/empty field CLEARS its value (he transmits the whole form each
 // time); limits mirror the owner's thought context (mood/doing/location).

@@ -201,6 +201,30 @@ export type GifDTO = {
   url: string;
 };
 
+/** One resolved vault petition. APPROVED carries the unsealed entry. */
+export type RevealDTO = {
+  id: string;
+  status: "APPROVED" | "DENIED";
+  requestedAt: string;
+  resolvedAt: string;
+  /** the unsealed entry's text, snapshotted at approval (APPROVED only) */
+  text: string | null;
+  /** when she originally wrote the unsealed entry (APPROVED only) */
+  thoughtAt: string | null;
+};
+
+/**
+ * JAZ://VAULT — her private journal as seen from outside: a count of sealed
+ * entries (DRAFT thoughts), the open petition if any, and the last few
+ * resolutions. Entry contents never ride along; only an approval's snapshot
+ * is ever exposed.
+ */
+export type VaultStateDTO = {
+  sealed: number;
+  pending: { id: string; at: string } | null;
+  reveals: RevealDTO[];
+};
+
 /**
  * HIM://STATUS — the recipient's self-reported telemetry, his mirror of the
  * owner's mood/doing/location context. `cravingAt` is the honey chicken

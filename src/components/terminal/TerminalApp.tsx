@@ -9,6 +9,7 @@ import { usePrefs, type PanelKey } from "@/lib/prefs";
 import type { BrainState } from "@/lib/types";
 import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
+import { VaultPanel } from "@/components/VaultPanel";
 import { ArchivePanel } from "./ArchivePanel";
 import { BootSequence } from "./BootSequence";
 import { CatCorners } from "./CatCorners";
@@ -134,6 +135,7 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
     uplink: state ? <ReplyComposer thoughtId={state.thought?.id ?? null} /> : null,
     comms: state ? <CommsPanel channels={state.channels} isAdmin={isAdmin} /> : null,
     archive: state ? <ArchivePanel archiveCount={state.archiveCount} /> : null,
+    vault: <VaultPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
     "now-playing": state?.nowPlaying ? (
       <NowPlayingPanel
         song={state.nowPlaying}

@@ -58,6 +58,7 @@ export const PANELS = [
   { key: "uplink", label: "UPLINK :: REPLY", locked: false, note: "transmissions back to the brain." },
   { key: "comms", label: "COMMS", locked: false, note: "open chat channels." },
   { key: "archive", label: "MEMORY BANKS", locked: false, note: "every thought ever aired." },
+  { key: "vault", label: "JAZ://VAULT", locked: false, note: "her sealed journal. counted, never read." },
   { key: "now-playing", label: "NOW PLAYING", locked: false, note: "what jaz is listening to." },
   { key: "vitals", label: "OPERATOR VITALS", locked: false, note: "coolant and payload intake." },
   { key: "node", label: "HIM://STATUS", locked: false, note: "the node's self-reported telemetry." },

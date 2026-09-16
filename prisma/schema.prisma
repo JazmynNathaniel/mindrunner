@@ -169,6 +169,22 @@ model Reminder {
   @@index([ackAt, dueAt])
 }
 
+// JAZ://VAULT — the owner's DRAFT thoughts double as her private journal.
+// The recipient sees only how many entries are sealed. A RevealRequest is his
+// petition to unseal ONE entry; the owner approves (choosing which entry —
+// its text is snapshotted at approval so later edits/deletes never rewrite
+// what was revealed) or denies. One PENDING petition at a time.
+model RevealRequest {
+  id                String    @id @default(uuid())
+  status            String    @default("PENDING") // PENDING | APPROVED | DENIED
+  createdAt         DateTime  @default(now())
+  resolvedAt        DateTime?
+  revealText        String? // snapshot of the unsealed entry, stamped at approval
+  revealedThoughtAt DateTime? // when she originally wrote that entry
+
+  @@index([status, createdAt])
+}
+
 // Singleton (id = 1): HIM://STATUS — the recipient's self-reported telemetry,
 // his mirror of the owner's mood/doing/location context. `cravingAt` is the
 // HONEY CHICKEN PROTOCOL: only he arms it, either side clears it when fed,
