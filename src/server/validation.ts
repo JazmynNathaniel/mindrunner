@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORIES } from "@/lib/types";
+import { CATEGORIES, DISHES } from "@/lib/types";
 
 // single source of truth is src/lib/types.ts (the UI selects use it too)
 export { CATEGORIES, type Category } from "@/lib/types";
@@ -189,17 +189,26 @@ export const vaultResolve = z
   });
 export type VaultResolve = z.infer<typeof vaultResolve>;
 
-// HIM://STATUS: telemetry fields ride along only on action "telemetry".
-// An omitted/empty field CLEARS its value (he transmits the whole form each
-// time); limits mirror the owner's thought context (mood/doing/location).
+// HIM://STATUS: telemetry only (the crave/fed actions retired with the fuel
+// flag — chicken protocols are selfie mechanics now). An omitted/empty field
+// CLEARS its value (he transmits the whole form each time); limits mirror the
+// owner's thought context (mood/doing/location).
 export const nodeAction = z.object({
-  action: z.enum(["telemetry", "crave", "fed"]),
+  action: z.enum(["telemetry"]),
   mood: z.preprocess(emptyToUndef, z.string().trim().max(60).optional()),
   doing: z.preprocess(emptyToUndef, z.string().trim().max(120).optional()),
   location: z.preprocess(emptyToUndef, z.string().trim().max(120).optional()),
   note: z.preprocess(emptyToUndef, z.string().trim().max(240).optional()),
 });
 export type NodeAction = z.infer<typeof nodeAction>;
+
+// CHICKEN PROTOCOLS: pressing demands the OTHER person's dish; rescind
+// withdraws your own unanswered demand. Role checks live in server/protocols.ts.
+export const protocolAction = z.object({
+  action: z.enum(["press", "rescind"]),
+  dish: z.enum(DISHES),
+});
+export type ProtocolAction = z.infer<typeof protocolAction>;
 
 export const vitalsAction = z
   .object({

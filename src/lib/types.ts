@@ -227,8 +227,7 @@ export type VaultStateDTO = {
 
 /**
  * HIM://STATUS — the recipient's self-reported telemetry, his mirror of the
- * owner's mood/doing/location context. `cravingAt` is the honey chicken
- * protocol: non-null means a fuel request is active.
+ * owner's mood/doing/location context.
  */
 export type NodeStatusDTO = {
   mood: string | null;
@@ -237,8 +236,31 @@ export type NodeStatusDTO = {
   note: string | null;
   /** when he last updated the fields above (null = the node has never reported) */
   telemetryAt: string | null;
-  /** when he declared the craving (null = fed / standby) */
-  cravingAt: string | null;
+};
+
+/** The two dishes. Each names a person: HONEY is the owner, JERK is the recipient. */
+export const DISHES = ["HONEY", "JERK"] as const;
+export type Dish = (typeof DISHES)[number];
+
+/**
+ * One dish's protocol state. Selfie images ride separately through the authed
+ * /api/selfie/[id] route — this DTO only ever carries ids and counts.
+ */
+export type DishStateDTO = {
+  dish: Dish;
+  /** selfies waiting sealed in the stash */
+  stock: number;
+  /** open demand (the protocol was pressed while the stash was bare) */
+  demand: { id: string; at: string } | null;
+  /** the most recently unsealed selfie (fetch via /api/selfie/[id]) */
+  latest: { id: string; at: string } | null;
+  /** total ever unsealed for this dish */
+  unsealedCount: number;
+};
+
+export type ProtocolsStateDTO = {
+  honey: DishStateDTO;
+  jerk: DishStateDTO;
 };
 
 /**

@@ -186,10 +186,9 @@ model RevealRequest {
 }
 
 // Singleton (id = 1): HIM://STATUS — the recipient's self-reported telemetry,
-// his mirror of the owner's mood/doing/location context. `cravingAt` is the
-// HONEY CHICKEN PROTOCOL: only he arms it, either side clears it when fed,
-// and the first declaration's timestamp is kept so the panel can report
-// exactly how long the node has gone unfueled.
+// his mirror of the owner's mood/doing/location context. (The old cravingAt
+// fuel flag retired 2026-09-16 when the chicken protocols became selfie
+// mechanics — see Selfie/SelfieDemand.)
 model RecipientStatus {
   id          Int       @id @default(1)
   mood        String?
@@ -197,7 +196,34 @@ model RecipientStatus {
   location    String?
   note        String?
   telemetryAt DateTime? // when he last updated the fields above
-  cravingAt   DateTime? // honey chicken protocol armed (null = fed / standby)
+}
+
+// CHICKEN PROTOCOLS — each dish names a person: HONEY is the owner, JERK is
+// the recipient. A Selfie is one image in a dish's stash; bytes live right
+// here in Postgres (client-downscaled webp/jpeg, ~300KB) and are served ONLY
+// through the authed /api/selfie/[id] route — never a public URL.
+// unsealedAt null = still sealed in the stash; set = revealed to the other side.
+model Selfie {
+  id         String    @id @default(uuid())
+  dish       String // "HONEY" | "JERK" (validated string, engine-portable)
+  mime       String // image/webp | image/jpeg | image/png
+  bytes      Bytes
+  createdAt  DateTime  @default(now())
+  unsealedAt DateTime?
+
+  @@index([dish, unsealedAt, createdAt])
+}
+
+// A live selfie demand: the protocol was pressed while the dish's stash was
+// bare. Blares on the subject's terminal until an upload fulfills it (that
+// upload unseals immediately instead of stocking the stash).
+model SelfieDemand {
+  id        String    @id @default(uuid())
+  dish      String // "HONEY" | "JERK"
+  createdAt DateTime  @default(now())
+  metAt     DateTime? // when the subject complied
+
+  @@index([dish, metAt])
 }
 
 // Singleton (id = 1): owner-configurable scheduler settings.
