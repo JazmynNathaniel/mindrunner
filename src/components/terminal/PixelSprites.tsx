@@ -145,25 +145,57 @@ export function PixelCat({
   );
 }
 
-// The one payload the node actually wants. Canonical food colors, hard-coded
-// like the cats' coats — honey chicken stays amber in every theme.
-const PLATE_PAL = {
-  steam: "#9a93bb",
-  rice: "#f2e7c4",
-  egg: "#ffd24d",
-  veg: "#4fae52",
-  carrot: "#ff8c42",
-  glaze: "#b3550f",
-  glazeHi: "#ff9e3d",
-  glazeDark: "#6e3608",
-  sesame: "#ffefd2",
-  rim: "#eae7f5",
-  plate: "#cfcae6",
-  foot: "#8d87ad",
-};
+// The two dishes of the chicken protocols. Canonical food colors, hard-coded
+// like the cats' coats — no theme may recolor dinner. Palette keys are named
+// for the honey plate; the jerk plate reuses the slots: egg/carrot become
+// plantain, veg becomes kidney bean (rice & peas), sesame becomes scotch
+// bonnet flecks.
+export type PlateVariant = "honey" | "jerk";
 
-/** Pixel plate of chinese honey chicken + fried rice, 14x10 grid. */
-export function PixelPlate({ size = 40, className }: { size?: number; className?: string }) {
+const PLATE_PALETTES = {
+  // chinese honey chicken + fried rice
+  honey: {
+    steam: "#9a93bb",
+    rice: "#f2e7c4",
+    egg: "#ffd24d",
+    veg: "#4fae52",
+    carrot: "#ff8c42",
+    glaze: "#b3550f",
+    glazeHi: "#ff9e3d",
+    glazeDark: "#6e3608",
+    sesame: "#ffefd2",
+    rim: "#eae7f5",
+    plate: "#cfcae6",
+    foot: "#8d87ad",
+  },
+  // jerk chicken + rice and peas + plantain
+  jerk: {
+    steam: "#9a93bb",
+    rice: "#f2e7c4",
+    egg: "#ffce54",
+    veg: "#7c2d3a",
+    carrot: "#e2a83d",
+    glaze: "#5c3317",
+    glazeHi: "#a4562a",
+    glazeDark: "#241209",
+    sesame: "#ff8c42",
+    rim: "#eae7f5",
+    plate: "#cfcae6",
+    foot: "#8d87ad",
+  },
+} satisfies Record<PlateVariant, Record<string, string>>;
+
+/** Pixel plate of chicken dinner (see PlateVariant), 14x10 grid. */
+export function PixelPlate({
+  size = 40,
+  variant = "honey",
+  className,
+}: {
+  size?: number;
+  variant?: PlateVariant;
+  className?: string;
+}) {
+  const PLATE_PAL = PLATE_PALETTES[variant];
   const cells: React.ReactNode[] = [];
   // key by paint order, not coordinate: scatter/shine pixels overpaint base
   // pixels at the same (x,y), and duplicate keys make React drop children

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { PixelPlate } from "./terminal/PixelSprites";
+import { PixelPlate, type PlateVariant } from "./terminal/PixelSprites";
 import { useReducedMotion } from "./terminal/Typewriter";
 
 const PLATES = 26;
@@ -39,7 +39,7 @@ function mulberry32(seed: number) {
  * entirely under reduced motion (the panel's ACTIVE state carries the news).
  * `burst` is a counter: each increment re-seeds and replays the downpour.
  */
-export function PlateRain({ burst }: { burst: number }) {
+export function PlateRain({ burst, dish = "honey" }: { burst: number; dish?: PlateVariant }) {
   const reduced = useReducedMotion();
   const [cleared, setCleared] = useState(0);
 
@@ -77,7 +77,7 @@ export function PlateRain({ burst }: { burst: number }) {
             animationDelay: `${d.delayMs}ms`,
           }}
         >
-          <PixelPlate size={d.size} />
+          <PixelPlate size={d.size} variant={dish} />
         </div>
       ))}
     </div>
