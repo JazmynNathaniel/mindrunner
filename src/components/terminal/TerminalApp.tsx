@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { getBooted, getBootedServer, setBooted, subscribeBooted } from "@/lib/bootFlag";
 import { usePrefs, type PanelKey } from "@/lib/prefs";
 import type { BrainState } from "@/lib/types";
+import { ChickenProtocolsPanel } from "@/components/ChickenProtocolsPanel";
 import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
 import { VaultPanel } from "@/components/VaultPanel";
@@ -146,6 +147,7 @@ export function TerminalApp({ isAdmin }: { isAdmin: boolean }) {
     ) : null,
     vitals: state ? <OperatorVitalsPanel vitals={state.vitals} /> : null,
     node: <NodeStatusPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
+    protocols: <ChickenProtocolsPanel role={isAdmin ? "OWNER" : "RECIPIENT"} />,
   };
 
   return (

@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { PlateRain } from "@/components/PlateRain";
 import type { NodeStatusDTO } from "@/lib/types";
 
 const POLL_MS = 60_000;
 
-// Fiction-approved nutrition science. The one payload the node actually wants.
+// Fiction-approved nutrition science, kept as lore now that the chicken
+// protocols are selfie mechanics (she IS the honey chicken these days).
 const OPTIMAL_FUEL = "chinese honey chicken + fried rice";
 
 type NodeActionBody = {
-  action: "telemetry" | "crave" | "fed";
+  action: "telemetry";
   mood?: string;
   doing?: string;
   location?: string;
@@ -20,16 +20,13 @@ type NodeActionBody = {
 
 /**
  * HIM://STATUS — the remote node's self-reported telemetry: the mirror of the
- * owner's mood/doing/location context. The RECIPIENT gets the controls
- * (transmit telemetry, arm the honey chicken protocol); the OWNER reads the
- * gauges and can stand the protocol down once the node has been fed.
+ * owner's mood/doing/location context. The RECIPIENT transmits; the OWNER
+ * reads the gauges. (Protocol buttons live in ChickenProtocolsPanel now.)
  */
 export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
   const [node, setNode] = useState<NodeStatusDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // each successful protocol press replays the plate downpour
-  const [burst, setBurst] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -66,8 +63,6 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
       setBusy(false);
     }
   }, []);
-
-  const craving = node?.cravingAt ?? null;
 
   return (
     <section className="panel p-4" aria-label="node status">
@@ -109,52 +104,16 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
           )}
 
           <div className="border-t border-grid pt-2">
-            {craving ? (
-              <>
-                <p className="text-alert" role="alert">
-                  !! HONEY CHICKEN PROTOCOL ACTIVE !!
-                </p>
-                <p className="text-dim">
-                  fuel requested {new Date(craving).toLocaleString()} —{" "}
-                  <span className="glow-pink">{OPTIMAL_FUEL}</span>
-                </p>
-              </>
-            ) : (
-              <p className="text-dim">
-                OPTIMAL FUEL :: <span className="glow-pink">{OPTIMAL_FUEL}</span>
-              </p>
-            )}
+            <p className="text-dim">
+              OPTIMAL FUEL :: <span className="glow-pink">{OPTIMAL_FUEL}</span>
+            </p>
           </div>
         </div>
       )}
 
-      {node !== null && (
+      {node !== null && role === "RECIPIENT" && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {craving && (
-            <button
-              type="button"
-              className="btn text-xs"
-              disabled={busy}
-              onClick={() => void act({ action: "fed" })}
-            >
-              mark node refueled
-            </button>
-          )}
-          {!craving && role === "RECIPIENT" && (
-            <button
-              type="button"
-              className="btn text-xs"
-              disabled={busy}
-              onClick={() =>
-                void act({ action: "crave" }).then((ok) => {
-                  if (ok) setBurst((b) => b + 1);
-                })
-              }
-            >
-              initiate honey chicken protocol
-            </button>
-          )}
-          {role === "RECIPIENT" && <TelemetryForm node={node} busy={busy} act={act} />}
+          <TelemetryForm node={node} busy={busy} act={act} />
         </div>
       )}
 
@@ -163,8 +122,6 @@ export function NodeStatusPanel({ role }: { role: "OWNER" | "RECIPIENT" }) {
           &gt; {error}
         </p>
       )}
-
-      <PlateRain burst={burst} />
     </section>
   );
 }

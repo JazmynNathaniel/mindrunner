@@ -16,6 +16,6 @@ export const POST = apiHandler(async (req) => {
   const form = await req.formData().catch(() => null);
   const file = form?.get("selfie");
   if (!(file instanceof File)) throw badRequest("no selfie in the transmission.");
-  const bytes = Buffer.from(await file.arrayBuffer());
+  const bytes = new Uint8Array(await file.arrayBuffer());
   return json({ protocols: await addSelfie(user.role, file.type, bytes) }, { status: 201 });
 });

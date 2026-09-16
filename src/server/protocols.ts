@@ -97,7 +97,7 @@ export async function rescindDemand(dish: Dish, role: string): Promise<Protocols
 export async function addSelfie(
   role: string,
   mime: string,
-  bytes: Buffer
+  bytes: Uint8Array<ArrayBuffer>
 ): Promise<ProtocolsStateDTO> {
   if (!MIMES.has(mime)) throw badRequest("unreadable image format. webp, jpeg or png only.");
   if (bytes.length === 0) throw badRequest("the image arrived empty.");

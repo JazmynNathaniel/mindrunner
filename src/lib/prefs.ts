@@ -62,6 +62,7 @@ export const PANELS = [
   { key: "now-playing", label: "NOW PLAYING", locked: false, note: "what jaz is listening to." },
   { key: "vitals", label: "OPERATOR VITALS", locked: false, note: "coolant and payload intake." },
   { key: "node", label: "HIM://STATUS", locked: false, note: "the node's self-reported telemetry." },
+  { key: "protocols", label: "CHICKEN PROTOCOLS", locked: false, note: "press to demand a selfie. blares until fed." },
 ] as const;
 export type PanelKey = (typeof PANELS)[number]["key"];
 

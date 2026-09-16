@@ -13,6 +13,7 @@ import type {
   SettingsDTO,
   SongDTO,
 } from "@/lib/types";
+import { ChickenProtocolsPanel } from "@/components/ChickenProtocolsPanel";
 import { NodeStatusPanel } from "@/components/NodeStatusPanel";
 import { SirenPanel } from "@/components/SirenPanel";
 import { VaultPanel } from "@/components/VaultPanel";
@@ -144,6 +145,7 @@ export function AdminApp() {
 
         <div className="flex flex-col gap-4 lg:col-span-2">
           <VaultPanel role="OWNER" drafts={thoughts.filter((t) => t.status === "DRAFT")} />
+          <ChickenProtocolsPanel role="OWNER" />
           <NodeStatusPanel role="OWNER" />
           {settings && <SettingsPanel settings={settings} run={run} />}
           <OperatorCareForm operator={operator} run={run} />
