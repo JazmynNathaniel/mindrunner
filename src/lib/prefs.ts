@@ -46,8 +46,8 @@ export const THEMES = [
   {
     id: "vaporwave",
     label: "VAPORWAVE",
-    blurb: "pastel static from a mall that no longer exists.",
-    swatch: ["#ff8ad8", "#b48aff", "#5cffc4", "#7ae4ff"],
+    blurb: "teal static from a mall that no longer exists.",
+    swatch: ["#ff71ce", "#b967ff", "#05ffa1", "#01cdfe"],
   },
 ] as const;
 export type ThemeId = (typeof THEMES)[number]["id"];
